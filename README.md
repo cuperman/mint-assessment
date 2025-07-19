@@ -12,7 +12,7 @@ At Mint Home, we’re revolutionizing HVAC replacements by empowering homeowne
 
 We use software to simplify a traditionally complex, sales-heavy process, cutting out hassle and hidden fees while ensuring quality HVAC installations.
 
-This take home challenge have been crafted to mirror real-world scenarios of our platform. It will assess your ability to build solutions using our stack and tackle scenarios similar to what our engineers face on a daily basis.
+This take home challenge has been crafted to mirror real-world scenarios of our platform. It will assess your ability to build solutions using our stack and tackle scenarios similar to what our engineers face on a daily basis.
 
 ## Challenges
 
@@ -42,3 +42,18 @@ Create a simple full-stack application that simulates a multi-step quote request
 2. Include clear documentation on how to run the solutions to both challenges.
 
 Good luck! We look forward to reviewing your solutions.
+
+## Notes
+
+Useful commands:
+
+```bash
+# use a consistent version of node
+nvm use
+
+# install dependencies
+npm install
+
+# run tests automatically as files change
+npm test -- --watch
+```
