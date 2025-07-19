@@ -2,7 +2,7 @@
 
 ## Overview
 
-In this challenge, you will create a simple and lightweight full-stack application that simulates a multi-step quote request wizard for HVAC installations. This is a simplified version of a real-world scenario where our customers request a quote online for our services. YOu can see our current implementation in our website www.minthome.com (At the moment we are only servicing Texas, Nevada and Arizona).
+In this challenge, you will create a simple and lightweight full-stack application that simulates a multi-step quote request wizard for HVAC installations. This is a simplified version of a real-world scenario where our customers request a quote online for our services. You can see our current implementation in our website www.minthome.com (At the moment we are only servicing Texas, Nevada and Arizona).
 
 ## Requirements
 
@@ -19,7 +19,7 @@ Create a multi-step wizard with the following flow:
 1. **Step 1: Address Collection**
    - Ask the customer for their address (street, city, state, zip code)
    - Include validation for required fields and proper formatting
-   - No need to include Google APIs, just collect information in a simple form is enough. Your choice how complex this form can be.
+   - No need to include Google APIs, just collecting information in a simple form is enough. Your choice how complex this form can be.
 
 2. **Step 2: AC Unit Quantity**
    - Ask how many AC units they have:
