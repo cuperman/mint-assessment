@@ -17,6 +17,8 @@ describe("concurrentMemoFibonacci", () => {
     const p6 = concurrentMemoFibonacci(5).then((r) => expect(r).toEqual(5));
     const p7 = concurrentMemoFibonacci(6).then((r) => expect(r).toEqual(8));
 
+    jest.runAllTimers();
+
     await Promise.all([p1, p2, p3, p4, p5, p6, p7]);
   });
 
@@ -34,7 +36,6 @@ describe("concurrentMemoFibonacci", () => {
     expect(r1).toBe(55);
     expect(r1).toBe(r2);
     expect(r3).toBe(34);
-    // FIXME: skip this requirement for now to get the logic working
-    // expect(spy).toHaveBeenCalledTimes(11); // 0..10
+    expect(spy).toHaveBeenCalledTimes(11); // 0..10
   });
 });

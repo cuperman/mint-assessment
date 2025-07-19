@@ -1,16 +1,22 @@
+const DELAY_TIME = 5;
+
+const cache: { [key: number]: number } = {
+  [0]: 0,
+  [1]: 1,
+};
+
 export async function concurrentMemoFibonacci(n: number): Promise<number> {
-  if (n === 0) {
-    return 0;
-  } else if (n === 1) {
-    return 1;
-  } else {
-    return new Promise((resolve, _reject) => {
-      Promise.all([
-        concurrentMemoFibonacci(n - 2),
-        concurrentMemoFibonacci(n - 1),
-      ]).then(([nMinus2, nMinus1]) => {
-        resolve(nMinus1 + nMinus2);
-      });
-    });
+  if (typeof cache[n] !== "undefined") {
+    return cache[n];
   }
+
+  return new Promise((resolve, _reject) => {
+    setTimeout(async () => {
+      const nMinus1 = await concurrentMemoFibonacci(n - 1);
+      const nMinus2 = await concurrentMemoFibonacci(n - 2);
+      const result = nMinus1 + nMinus2;
+      cache[n] = result;
+      resolve(result);
+    }, DELAY_TIME);
+  });
 }
