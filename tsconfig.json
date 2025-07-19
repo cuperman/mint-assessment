@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "jsx": "react-jsx",
+      "target": "es2019",
+      "module": "commonjs",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true
+    },
+    "include": [
+      "01-concurrent-fibonacci/src/**/*",
+      "01-concurrent-fibonacci/tests/**/*"
+    ]
+  }
