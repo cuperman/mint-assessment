@@ -19,13 +19,17 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
+        working-directory: ./02-wizard-application/backend
         run: npm ci
 
       - name: Build
+        working-directory: ./02-wizard-application/backend
         run: npm run build
 
       - name: Lint
+        working-directory: ./02-wizard-application/backend
         run: npm run lint
 
       - name: Test
+        working-directory: ./02-wizard-application/backend
         run: npm test
