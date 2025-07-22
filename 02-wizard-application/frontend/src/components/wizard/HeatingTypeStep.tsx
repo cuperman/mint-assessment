@@ -23,8 +23,8 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const HEATING_TYPE_OPTIONS = [
-  { value: 'heat-pump', label: 'Heat Pump' },
-  { value: 'gas', label: 'Gas Heating' },
+  { value: 'heat-pump', label: 'Heat pump' },
+  { value: 'gas', label: 'Gas' },
   { value: 'i-dont-know', label: "I don't know" },
 ] as const;
 

@@ -31,9 +31,9 @@ export function ConfirmationStep() {
     if (!type) return 'Not specified';
     switch (type) {
       case 'split':
-        return 'Split System';
+        return 'Split';
       case 'package':
-        return 'Package System';
+        return 'Package';
       case 'i_dont_know':
         return "I don't know the system type";
       default:
@@ -45,9 +45,9 @@ export function ConfirmationStep() {
     if (!type) return 'Not specified';
     switch (type) {
       case 'heat-pump':
-        return 'Heat Pump';
+        return 'Heat pump';
       case 'gas':
-        return 'Gas Heating';
+        return 'Gas';
       case 'i_dont_know':
         return "I don't know the heating type";
       default:

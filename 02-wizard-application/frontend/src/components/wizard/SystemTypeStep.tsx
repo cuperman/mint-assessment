@@ -23,8 +23,8 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const SYSTEM_TYPE_OPTIONS = [
-  { value: 'split', label: 'Split System' },
-  { value: 'package', label: 'Package System' },
+  { value: 'split', label: 'Split' },
+  { value: 'package', label: 'Package' },
   { value: 'i-dont-know', label: "I don't know" },
 ] as const;
 
