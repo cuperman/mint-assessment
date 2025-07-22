@@ -11,6 +11,9 @@ import {
   QuoteRequest as QuoteRequestDto,
   SubmitQuoteRequest,
   QuoteStatus,
+  ACUnitQuantity,
+  SystemType,
+  HeatingType,
 } from '../dto/wizard.dto';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -137,6 +140,13 @@ export class WizardService {
       this.hasValidValue(quoteRequest.state) &&
       this.hasValidValue(quoteRequest.zipCode);
 
+    // Check for "I don't know" values that should skip to contact info
+    const hasSkipToContactValue =
+      quoteRequest.acUnitQuantity === ACUnitQuantity.MORE_THAN_THREE ||
+      quoteRequest.acUnitQuantity === ACUnitQuantity.I_DONT_KNOW ||
+      quoteRequest.systemType === SystemType.I_DONT_KNOW ||
+      quoteRequest.heatingType === HeatingType.I_DONT_KNOW;
+
     const hasSystemInfo =
       this.hasValidValue(quoteRequest.acUnitQuantity) &&
       this.hasValidValue(quoteRequest.systemType) &&
@@ -150,8 +160,8 @@ export class WizardService {
 
     if (hasAddress && hasSystemInfo && hasContact) {
       return QuoteStatus.CONTACT_INFO; // Ready for submission
-    } else if (hasAddress && hasSystemInfo) {
-      return QuoteStatus.CONTACT_INFO; // Need contact info
+    } else if (hasAddress && (hasSystemInfo || hasSkipToContactValue)) {
+      return QuoteStatus.CONTACT_INFO; // Need contact info (either complete system info or skip conditions met)
     } else {
       return QuoteStatus.QUESTIONNAIRE; // Still collecting system info
     }
@@ -170,17 +180,17 @@ export class WizardService {
   private validateQuoteRequestComplete(quoteRequest: QuoteRequest): void {
     const missingFields: string[] = [];
 
+    // Address fields are always required
     if (!this.hasValidValue(quoteRequest.street)) missingFields.push('street');
     if (!this.hasValidValue(quoteRequest.city)) missingFields.push('city');
     if (!this.hasValidValue(quoteRequest.state)) missingFields.push('state');
     if (!this.hasValidValue(quoteRequest.zipCode))
       missingFields.push('zipCode');
-    if (!this.hasValidValue(quoteRequest.acUnitQuantity))
-      missingFields.push('acUnitQuantity');
-    if (!this.hasValidValue(quoteRequest.systemType))
-      missingFields.push('systemType');
-    if (!this.hasValidValue(quoteRequest.heatingType))
-      missingFields.push('heatingType');
+
+    // AC unit quantity, system type, and heating type are now optional
+    // (users may have selected "I don't know" which triggers smart progression)
+
+    // Contact fields are always required
     if (!this.hasValidValue(quoteRequest.contactName))
       missingFields.push('contactName');
     if (!this.hasValidValue(quoteRequest.contactNumber))

@@ -27,7 +27,12 @@ export function AddressStep() {
 
   const form = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
-    defaultValues: sessionData?.data.address || {
+    defaultValues: sessionData?.data.address ? {
+      street: sessionData.data.address.address,
+      city: sessionData.data.address.city,
+      state: sessionData.data.address.state,
+      zip: sessionData.data.address.zipCode,
+    } : {
       street: '',
       city: '',
       state: '',
@@ -94,12 +99,12 @@ export function AddressStep() {
                 control={form.control}
                 name='state'
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className='flex flex-col'>
                     <FormLabel>State</FormLabel>
                     <FormControl>
                       <Input placeholder='TX' maxLength={2} {...field} />
                     </FormControl>
-                    <FormMessage />
+                      <FormMessage />
                   </FormItem>
                 )}
               />
@@ -108,12 +113,12 @@ export function AddressStep() {
                 control={form.control}
                 name='zip'
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className='flex flex-col'>
                     <FormLabel>ZIP Code</FormLabel>
                     <FormControl>
                       <Input placeholder='78701' {...field} />
                     </FormControl>
-                    <FormMessage />
+                      <FormMessage />
                   </FormItem>
                 )}
               />
