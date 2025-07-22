@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import { QuoteRequest } from '../schemas/wizard.schema';
 import {
   QuoteRequest as QuoteRequestDto,
+  SubmitQuoteRequest,
   QuoteStatus,
 } from '../dto/wizard.dto';
 import { v4 as uuidv4 } from 'uuid';
@@ -87,7 +88,10 @@ export class WizardService {
    * Complete/submit quote request
    * POST /quote_request/:sessionId
    */
-  async submitQuoteRequest(sessionId: string): Promise<QuoteRequest> {
+  async submitQuoteRequest(
+    sessionId: string,
+    submitData: SubmitQuoteRequest,
+  ): Promise<QuoteRequest> {
     this.logger.log(`Submitting quote request: ${sessionId}`);
 
     const quoteRequest = await this.quoteRequestModel.findOne({ sessionId });
@@ -95,9 +99,15 @@ export class WizardService {
       throw new NotFoundException(`Quote request not found: ${sessionId}`);
     }
 
-    // Validate completeness before submission
+    // Update contact information from submission data
+    quoteRequest.contactName = submitData.contactName;
+    quoteRequest.contactNumber = submitData.contactNumber;
+    quoteRequest.emailAddress = submitData.emailAddress;
+
+    // Validate completeness before submission (now including the new contact data)
     this.validateQuoteRequestComplete(quoteRequest);
 
+    // Mark as submitted
     quoteRequest.status = QuoteStatus.SUBMITTED;
     await quoteRequest.save();
 

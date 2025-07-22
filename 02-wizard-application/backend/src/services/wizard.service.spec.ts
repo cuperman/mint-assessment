@@ -149,8 +149,13 @@ describe('WizardService', () => {
 
   describe('submitQuoteRequest', () => {
     const sessionId = 'test-session-id';
+    const contactData = {
+      contactName: 'John Doe',
+      contactNumber: '5551234567',
+      emailAddress: 'john@example.com',
+    };
 
-    it('should submit complete quote request', async () => {
+    it('should submit complete quote request with contact data', async () => {
       const completeQuoteRequest = {
         ...mockQuoteRequest,
         status: QuoteStatus.CONTACT_INFO,
@@ -158,8 +163,13 @@ describe('WizardService', () => {
       };
       mockModel.findOne.mockResolvedValue(completeQuoteRequest);
 
-      const result = await service.submitQuoteRequest(sessionId);
+      const result = await service.submitQuoteRequest(sessionId, contactData);
 
+      expect(completeQuoteRequest.contactName).toBe(contactData.contactName);
+      expect(completeQuoteRequest.contactNumber).toBe(
+        contactData.contactNumber,
+      );
+      expect(completeQuoteRequest.emailAddress).toBe(contactData.emailAddress);
       expect(result.status).toBe(QuoteStatus.SUBMITTED);
       expect(completeQuoteRequest.save).toHaveBeenCalled();
     });
@@ -167,9 +177,9 @@ describe('WizardService', () => {
     it('should throw NotFoundException when quote request not found', async () => {
       mockModel.findOne.mockResolvedValue(null);
 
-      await expect(service.submitQuoteRequest(sessionId)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.submitQuoteRequest(sessionId, contactData),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException when required fields missing', async () => {
@@ -181,12 +191,12 @@ describe('WizardService', () => {
       };
       mockModel.findOne.mockResolvedValue(incompleteQuoteRequest);
 
-      await expect(service.submitQuoteRequest(sessionId)).rejects.toThrow(
-        BadRequestException,
-      );
-      await expect(service.submitQuoteRequest(sessionId)).rejects.toThrow(
-        'Quote request is incomplete',
-      );
+      await expect(
+        service.submitQuoteRequest(sessionId, contactData),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.submitQuoteRequest(sessionId, contactData),
+      ).rejects.toThrow('Quote request is incomplete');
     });
   });
 });
