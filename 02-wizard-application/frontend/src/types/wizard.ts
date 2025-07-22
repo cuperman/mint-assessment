@@ -46,5 +46,5 @@ export interface WizardStepConfig {
   step: WizardStep;
   title: string;
   description: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<Record<string, unknown>>;
 }

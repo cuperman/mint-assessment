@@ -21,7 +21,7 @@ export function SummaryStep() {
     <Card className='w-full max-w-md mx-auto'>
       <CardHeader>
         <CardTitle>Summary</CardTitle>
-        <CardDescription>Here's what we've collected so far:</CardDescription>
+        <CardDescription>Here&apos;s what we&apos;ve collected so far:</CardDescription>
       </CardHeader>
       <CardContent className='space-y-4'>
         {state.address && (
