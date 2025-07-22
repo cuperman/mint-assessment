@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addressSchema, AddressFormData } from '@/lib/schemas';
-import { useWizard } from '@/context/WizardContext';
+import { useWizardApi } from '@/context/WizardApiContext';
 import {
   Form,
   FormControl,
@@ -14,14 +14,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export function AddressStep() {
-  const { state, setAddress, goToNextStep } = useWizard();
+  const { sessionData, submitStepAndGetNext, isLoading } = useWizardApi();
 
   const form = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
-    defaultValues: state.address || {
+    defaultValues: sessionData?.data.address || {
       street: '',
       city: '',
       state: '',
@@ -30,9 +36,17 @@ export function AddressStep() {
   });
 
   const onSubmit = async (data: AddressFormData) => {
-    setAddress(data);
-    // Here we would normally save to backend
-    goToNextStep();
+    try {
+      const addressData = {
+        address: data.street,
+        city: data.city,
+        state: data.state,
+        zipCode: data.zip,
+      };
+      await submitStepAndGetNext(addressData);
+    } catch (error) {
+      console.error('Failed to submit address:', error);
+    }
   };
 
   return (
@@ -40,7 +54,8 @@ export function AddressStep() {
       <CardHeader>
         <CardTitle>Your Address</CardTitle>
         <CardDescription>
-          Please provide your address to get an accurate quote for your HVAC installation.
+          Please provide your address to get an accurate quote for your HVAC
+          installation.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -104,8 +119,8 @@ export function AddressStep() {
               />
             </div>
 
-            <Button type='submit' className='w-full'>
-              Continue to AC Units
+            <Button type='submit' className='w-full' disabled={isLoading}>
+              {isLoading ? 'Submitting...' : 'Continue to AC Units'}
             </Button>
           </form>
         </Form>

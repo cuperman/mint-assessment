@@ -56,7 +56,10 @@ function getNextStepNumber(state: WizardData): number {
     case 1: // Address -> AC Units
       return 2;
     case 2: // AC Units
-      if (state.acUnits?.units === 'more-than-3' || state.acUnits?.units === 'i-dont-know') {
+      if (
+        state.acUnits?.units === 'more-than-3' ||
+        state.acUnits?.units === 'i-dont-know'
+      ) {
         return 5; // Go to contact page
       }
       return 3; // Go to System Type
@@ -91,7 +94,8 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
         ...state,
         acUnits: action.payload,
         needsContact:
-          action.payload.units === 'more-than-3' || action.payload.units === 'i-dont-know',
+          action.payload.units === 'more-than-3' ||
+          action.payload.units === 'i-dont-know',
       };
     case 'SET_SYSTEM_TYPE':
       return {
@@ -151,14 +155,18 @@ export function WizardProvider({ children }: { children: ReactNode }) {
   const getNextStep = () => getNextStepNumber(state);
   const goToNextStep = () => dispatch({ type: 'NEXT_STEP' });
   const goToPrevStep = () => dispatch({ type: 'PREV_STEP' });
-  const goToStep = (step: number) => dispatch({ type: 'SET_STEP', payload: step });
-  const setAddress = (data: AddressData) => dispatch({ type: 'SET_ADDRESS', payload: data });
-  const setACUnits = (data: ACUnitsData) => dispatch({ type: 'SET_AC_UNITS', payload: data });
+  const goToStep = (step: number) =>
+    dispatch({ type: 'SET_STEP', payload: step });
+  const setAddress = (data: AddressData) =>
+    dispatch({ type: 'SET_ADDRESS', payload: data });
+  const setACUnits = (data: ACUnitsData) =>
+    dispatch({ type: 'SET_AC_UNITS', payload: data });
   const setSystemType = (data: SystemTypeData) =>
     dispatch({ type: 'SET_SYSTEM_TYPE', payload: data });
   const setHeatingType = (data: HeatingTypeData) =>
     dispatch({ type: 'SET_HEATING_TYPE', payload: data });
-  const setContact = (data: ContactData) => dispatch({ type: 'SET_CONTACT', payload: data });
+  const setContact = (data: ContactData) =>
+    dispatch({ type: 'SET_CONTACT', payload: data });
   const setNeedsContact = (needs: boolean) =>
     dispatch({ type: 'SET_NEEDS_CONTACT', payload: needs });
   const reset = () => dispatch({ type: 'RESET' });
@@ -179,7 +187,9 @@ export function WizardProvider({ children }: { children: ReactNode }) {
     getNextStep,
   };
 
-  return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>;
+  return (
+    <WizardContext.Provider value={value}>{children}</WizardContext.Provider>
+  );
 }
 
 export function useWizard() {
