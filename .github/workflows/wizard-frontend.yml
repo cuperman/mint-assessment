@@ -1,0 +1,35 @@
+name: Wizard Frontend Pipeline
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        working-directory: ./02-wizard-application/frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: ./02-wizard-application/frontend
+        run: npm run build
+
+      - name: Lint
+        working-directory: ./02-wizard-application/frontend
+        run: npm run lint
+
+      - name: Test
+        working-directory: ./02-wizard-application/frontend
+        run: npm test
