@@ -25,7 +25,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 const HEATING_TYPE_OPTIONS = [
   { value: 'heat-pump', label: 'Heat pump' },
   { value: 'gas', label: 'Gas' },
-  { value: 'i-dont-know', label: "I don't know" },
+  { value: 'i_dont_know', label: "I don't know" },
 ] as const;
 
 export function HeatingTypeStep() {
@@ -48,7 +48,7 @@ export function HeatingTypeStep() {
       const heatingTypeData = {
         heatingType: data.type,
         hasExistingDucts: 'yes', // Default value, could be made dynamic
-        customHeatingType: data.type === 'i-dont-know' ? undefined : data.type,
+        customHeatingType: data.type === 'i_dont_know' ? undefined : data.type,
       };
       await submitStepAndGetNext(heatingTypeData);
     } catch (error) {

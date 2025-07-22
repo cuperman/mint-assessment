@@ -58,18 +58,18 @@ function getNextStepNumber(state: WizardData): number {
     case 2: // AC Units
       if (
         state.acUnits?.units === 'more-than-3' ||
-        state.acUnits?.units === 'i-dont-know'
+        state.acUnits?.units === 'i_dont_know'
       ) {
         return 5; // Go to contact page
       }
       return 3; // Go to System Type
     case 3: // System Type
-      if (state.systemType?.type === 'i-dont-know') {
+      if (state.systemType?.type === 'i_dont_know') {
         return 5; // Go to contact page
       }
       return 4; // Go to Heating Type
     case 4: // Heating Type
-      if (state.heatingType?.type === 'i-dont-know') {
+      if (state.heatingType?.type === 'i_dont_know') {
         return 5; // Go to contact page
       }
       return 5; // Go to Contact
@@ -95,19 +95,19 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
         acUnits: action.payload,
         needsContact:
           action.payload.units === 'more-than-3' ||
-          action.payload.units === 'i-dont-know',
+          action.payload.units === 'i_dont_know',
       };
     case 'SET_SYSTEM_TYPE':
       return {
         ...state,
         systemType: action.payload,
-        needsContact: action.payload.type === 'i-dont-know',
+        needsContact: action.payload.type === 'i_dont_know',
       };
     case 'SET_HEATING_TYPE':
       return {
         ...state,
         heatingType: action.payload,
-        needsContact: action.payload.type === 'i-dont-know',
+        needsContact: action.payload.type === 'i_dont_know',
       };
     case 'SET_CONTACT':
       return {

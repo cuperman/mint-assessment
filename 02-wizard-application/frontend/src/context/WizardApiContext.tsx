@@ -388,7 +388,7 @@ export const mapAddressToUpdateRequest = (address: {
 });
 
 export const mapACUnitsToUpdateRequest = (acUnits: {
-  units: '1' | '2' | 'more-than-3' | 'i-dont-know';
+  units: '1' | '2' | 'more-than-3' | 'i_dont_know';
 }): UpdateQuoteRequest => {
   let acUnitQuantity: ACUnitQuantity;
   switch (acUnits.units) {
@@ -401,7 +401,7 @@ export const mapACUnitsToUpdateRequest = (acUnits: {
     case 'more-than-3':
       acUnitQuantity = ACUnitQuantity.MORE_THAN_THREE;
       break;
-    case 'i-dont-know':
+    case 'i_dont_know':
       acUnitQuantity = ACUnitQuantity.I_DONT_KNOW;
       break;
     default:
@@ -411,7 +411,7 @@ export const mapACUnitsToUpdateRequest = (acUnits: {
 };
 
 export const mapSystemTypeToUpdateRequest = (systemType: {
-  type: 'split' | 'package' | 'i-dont-know';
+  type: 'split' | 'package' | 'i_dont_know';
 }): UpdateQuoteRequest => {
   let systemTypeEnum: SystemType;
   switch (systemType.type) {
@@ -421,7 +421,7 @@ export const mapSystemTypeToUpdateRequest = (systemType: {
     case 'package':
       systemTypeEnum = SystemType.PACKAGE;
       break;
-    case 'i-dont-know':
+    case 'i_dont_know':
       systemTypeEnum = SystemType.I_DONT_KNOW;
       break;
     default:
@@ -431,7 +431,7 @@ export const mapSystemTypeToUpdateRequest = (systemType: {
 };
 
 export const mapHeatingTypeToUpdateRequest = (heatingType: {
-  type: 'heat-pump' | 'gas' | 'i-dont-know';
+  type: 'heat-pump' | 'gas' | 'i_dont_know';
 }): UpdateQuoteRequest => {
   let heatingTypeEnum: HeatingType;
   switch (heatingType.type) {
@@ -441,7 +441,7 @@ export const mapHeatingTypeToUpdateRequest = (heatingType: {
     case 'gas':
       heatingTypeEnum = HeatingType.GAS;
       break;
-    case 'i-dont-know':
+    case 'i_dont_know':
       heatingTypeEnum = HeatingType.I_DONT_KNOW;
       break;
     default:

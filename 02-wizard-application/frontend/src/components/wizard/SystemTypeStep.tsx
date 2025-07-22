@@ -25,7 +25,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 const SYSTEM_TYPE_OPTIONS = [
   { value: 'split', label: 'Split' },
   { value: 'package', label: 'Package' },
-  { value: 'i-dont-know', label: "I don't know" },
+  { value: 'i_dont_know', label: "I don't know" },
 ] as const;
 
 export function SystemTypeStep() {
@@ -47,7 +47,7 @@ export function SystemTypeStep() {
     try {
       const systemTypeData = {
         systemType: data.type,
-        customType: data.type === 'i-dont-know' ? undefined : data.type,
+        customType: data.type === 'i_dont_know' ? undefined : data.type,
       };
       await submitStepAndGetNext(systemTypeData);
     } catch (error) {
