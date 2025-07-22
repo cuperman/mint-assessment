@@ -188,7 +188,7 @@ class WizardApiService {
             acUnitQuantity = ACUnitQuantity.THREE;
           } else if (units === 4 || units === 'more-than-3') {
             acUnitQuantity = ACUnitQuantity.MORE_THAN_THREE;
-          } else if (units === 0 || units === 'i-dont-know') {
+          } else if (units === 0 || units === 'i_dont_know') {
             acUnitQuantity = ACUnitQuantity.I_DONT_KNOW;
           } else {
             acUnitQuantity = ACUnitQuantity.I_DONT_KNOW; // Default fallback

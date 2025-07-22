@@ -8,19 +8,19 @@ export const addressSchema = z.object({
 });
 
 export const acUnitsSchema = z.object({
-  units: z.enum(['1', '2', 'more-than-3', 'i-dont-know'], {
+  units: z.enum(['1', '2', 'more-than-3', 'i_dont_know'], {
     message: 'Please select the number of AC units',
   }),
 });
 
 export const systemTypeSchema = z.object({
-  type: z.enum(['split', 'package', 'i-dont-know'], {
+  type: z.enum(['split', 'package', 'i_dont_know'], {
     message: 'Please select the system type',
   }),
 });
 
 export const heatingTypeSchema = z.object({
-  type: z.enum(['heat-pump', 'gas', 'i-dont-know'], {
+  type: z.enum(['heat-pump', 'gas', 'i_dont_know'], {
     message: 'Please select the heating type',
   }),
 });

@@ -35,7 +35,7 @@ export function ConfirmationStep() {
       case 'package':
         return 'Package';
       case 'i_dont_know':
-        return "I don't know the system type";
+        return "I don't know";
       default:
         return type;
     }
@@ -49,7 +49,7 @@ export function ConfirmationStep() {
       case 'gas':
         return 'Gas';
       case 'i_dont_know':
-        return "I don't know the heating type";
+        return "I don't know";
       default:
         return type;
     }

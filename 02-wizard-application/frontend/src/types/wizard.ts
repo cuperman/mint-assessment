@@ -6,15 +6,15 @@ export interface AddressData {
 }
 
 export interface ACUnitsData {
-  units: '1' | '2' | 'more-than-3' | 'i-dont-know';
+  units: '1' | '2' | 'more-than-3' | 'i_dont_know';
 }
 
 export interface SystemTypeData {
-  type: 'split' | 'package' | 'i-dont-know';
+  type: 'split' | 'package' | 'i_dont_know';
 }
 
 export interface HeatingTypeData {
-  type: 'heat-pump' | 'gas' | 'i-dont-know';
+  type: 'heat-pump' | 'gas' | 'i_dont_know';
 }
 
 export interface ContactData {
