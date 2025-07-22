@@ -198,5 +198,199 @@ describe('WizardService', () => {
         service.submitQuoteRequest(sessionId, contactData),
       ).rejects.toThrow('Quote request is incomplete');
     });
+
+    it('should allow submission with missing AC unit quantity (lenient validation)', async () => {
+      const quoteRequestWithoutAC = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        // acUnitQuantity missing
+        systemType: SystemType.SPLIT,
+        heatingType: HeatingType.GAS,
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequestWithoutAC);
+
+      const result = await service.submitQuoteRequest(sessionId, contactData);
+
+      expect(result.contactName).toBe(contactData.contactName);
+      expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(quoteRequestWithoutAC.save).toHaveBeenCalled();
+    });
+
+    it('should allow submission with missing system type (lenient validation)', async () => {
+      const quoteRequestWithoutSystem = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        acUnitQuantity: ACUnitQuantity.TWO,
+        // systemType missing
+        heatingType: HeatingType.GAS,
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequestWithoutSystem);
+
+      const result = await service.submitQuoteRequest(sessionId, contactData);
+
+      expect(result.contactName).toBe(contactData.contactName);
+      expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(quoteRequestWithoutSystem.save).toHaveBeenCalled();
+    });
+
+    it('should allow submission with missing heating type (lenient validation)', async () => {
+      const quoteRequestWithoutHeating = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        acUnitQuantity: ACUnitQuantity.TWO,
+        systemType: SystemType.SPLIT,
+        // heatingType missing
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequestWithoutHeating);
+
+      const result = await service.submitQuoteRequest(sessionId, contactData);
+
+      expect(result.contactName).toBe(contactData.contactName);
+      expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(quoteRequestWithoutHeating.save).toHaveBeenCalled();
+    });
+
+    it('should allow submission with all system fields missing (smart progression scenario)', async () => {
+      const minimalQuoteRequest = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        // All system fields missing (user selected "I don't know" options)
+        status: QuoteStatus.CONTACT_INFO,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(minimalQuoteRequest);
+
+      const result = await service.submitQuoteRequest(sessionId, contactData);
+
+      expect(result.contactName).toBe(contactData.contactName);
+      expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(minimalQuoteRequest.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('Smart status progression for "I don\'t know" responses', () => {
+    const sessionId = 'test-session-id';
+
+    it('should progress to contact_info when AC unit quantity is "more than 3"', async () => {
+      const quoteRequest = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        acUnitQuantity: ACUnitQuantity.MORE_THAN_THREE,
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequest);
+
+      const result = await service.updateQuoteRequest(sessionId, {
+        acUnitQuantity: ACUnitQuantity.MORE_THAN_THREE,
+      });
+
+      expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+    });
+
+    it('should progress to contact_info when AC unit quantity is "I don\'t know"', async () => {
+      const quoteRequest = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        acUnitQuantity: ACUnitQuantity.I_DONT_KNOW,
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequest);
+
+      const result = await service.updateQuoteRequest(sessionId, {
+        acUnitQuantity: ACUnitQuantity.I_DONT_KNOW,
+      });
+
+      expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+    });
+
+    it('should progress to contact_info when system type is "I don\'t know"', async () => {
+      const quoteRequest = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        acUnitQuantity: ACUnitQuantity.TWO,
+        systemType: SystemType.I_DONT_KNOW,
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequest);
+
+      const result = await service.updateQuoteRequest(sessionId, {
+        systemType: SystemType.I_DONT_KNOW,
+      });
+
+      expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+    });
+
+    it('should progress to contact_info when heating type is "I don\'t know"', async () => {
+      const quoteRequest = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        acUnitQuantity: ACUnitQuantity.TWO,
+        systemType: SystemType.SPLIT,
+        heatingType: HeatingType.I_DONT_KNOW,
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequest);
+
+      const result = await service.updateQuoteRequest(sessionId, {
+        heatingType: HeatingType.I_DONT_KNOW,
+      });
+
+      expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+    });
+
+    it('should stay in questionnaire status when all values are known', async () => {
+      const quoteRequest = {
+        sessionId,
+        street: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '78701',
+        acUnitQuantity: ACUnitQuantity.TWO,
+        systemType: SystemType.SPLIT,
+        status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      mockModel.findOne.mockResolvedValue(quoteRequest);
+
+      const result = await service.updateQuoteRequest(sessionId, {
+        systemType: SystemType.SPLIT,
+      });
+
+      expect(result.status).toBe(QuoteStatus.QUESTIONNAIRE);
+    });
   });
 });

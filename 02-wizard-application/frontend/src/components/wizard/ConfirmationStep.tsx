@@ -14,12 +14,13 @@ import { CheckCircle } from 'lucide-react';
 export function ConfirmationStep() {
   const { sessionData, reset } = useWizardApi();
 
-  const handleStartOver = () => {
-    reset();
+  const handleStartOver = async () => {
+    await reset();
   };
 
   const formatACUnits = (units?: number) => {
-    if (!units) return 'Not specified';
+    if (units === undefined || units === null) return 'Not specified';
+    if (units === 0) return "I don't know";
     if (units === 1) return '1 AC Unit';
     if (units === 2) return '2 AC Units';
     if (units > 3) return 'More than 3 AC Units';
@@ -33,7 +34,7 @@ export function ConfirmationStep() {
         return 'Split System';
       case 'package':
         return 'Package System';
-      case 'i-dont-know':
+      case 'i_dont_know':
         return "I don't know the system type";
       default:
         return type;
@@ -47,7 +48,7 @@ export function ConfirmationStep() {
         return 'Heat Pump';
       case 'gas':
         return 'Gas Heating';
-      case 'i-dont-know':
+      case 'i_dont_know':
         return "I don't know the heating type";
       default:
         return type;

@@ -17,7 +17,6 @@ import {
   ACUnitsData,
   SystemTypeData,
   HeatingTypeData,
-  ContactData,
 } from '@/types/api';
 
 const API_BASE_URL = 'http://localhost:3001';
@@ -185,10 +184,14 @@ class WizardApiService {
             acUnitQuantity = ACUnitQuantity.ONE;
           } else if (units === 2 || units === '2') {
             acUnitQuantity = ACUnitQuantity.TWO;
-          } else if (units === 3 || units === '3' || units === 'more-than-3') {
+          } else if (units === 3 || units === '3') {
+            acUnitQuantity = ACUnitQuantity.THREE;
+          } else if (units === 4 || units === 'more-than-3') {
             acUnitQuantity = ACUnitQuantity.MORE_THAN_THREE;
-          } else {
+          } else if (units === 0 || units === 'i-dont-know') {
             acUnitQuantity = ACUnitQuantity.I_DONT_KNOW;
+          } else {
+            acUnitQuantity = ACUnitQuantity.I_DONT_KNOW; // Default fallback
           }
 
           updateData = { acUnitQuantity };
@@ -245,47 +248,50 @@ class WizardApiService {
         }
         break;
 
-      case 5: // Contact step
-        if ('firstName' in stepData && 'lastName' in stepData) {
-          const contactData = stepData as ContactData;
-          updateData = {
-            contactName:
-              `${contactData.firstName} ${contactData.lastName}`.trim(),
-            contactNumber: contactData.phone.replace(/\D/g, ''), // Remove non-digits
-            emailAddress: contactData.email,
-          };
-        } else if ('name' in stepData) {
-          const contactData = stepData as unknown as {
-            name: string;
-            phone: string;
-            email: string;
-          };
-          updateData = {
-            contactName: contactData.name,
-            contactNumber: contactData.phone.replace(/\D/g, ''), // Remove non-digits
-            emailAddress: contactData.email,
-          };
-        }
-        break;
-
       default:
         throw new Error(`Unsupported step: ${currentStep}`);
     }
 
-    // Update the quote request
+    // Send data to server and get updated quote request
     const updatedQuoteRequest = await this.updateQuoteRequest(
       sessionId,
       updateData,
     );
 
-    // Determine next step
-    const nextStep = this.determineCurrentStep(updatedQuoteRequest);
-    const isComplete = nextStep >= 6;
+    // Simple next step logic based on server response
+    let nextStep: number;
+    if (updatedQuoteRequest.status === 'contact_info') {
+      nextStep = 5; // Jump to contact info step
+    } else if (updatedQuoteRequest.status === 'questionnaire') {
+      nextStep = currentStep + 1; // Proceed to next step
+    } else {
+      nextStep = 6; // Go to confirmation
+    }
 
     return {
-      nextStep: isComplete ? currentStep : nextStep,
-      isComplete,
+      nextStep,
+      isComplete: nextStep >= 6,
       sessionId,
+    };
+  }
+
+  // Submit contact step (step 5) - uses POST to submit final quote
+  async submitContactStep(sessionId: string, contactData: {
+    name: string;
+    phone: string;
+    email: string;
+  }): Promise<{ success: boolean; status: string }> {
+    const submitData: SubmitQuoteRequestNew = {
+      contactName: contactData.name,
+      contactNumber: contactData.phone.replace(/\D/g, ''), // Remove non-digits
+      emailAddress: contactData.email,
+    };
+
+    await this.submitQuoteRequest(sessionId, submitData);
+    
+    return {
+      success: true,
+      status: 'submitted'
     };
   }
 

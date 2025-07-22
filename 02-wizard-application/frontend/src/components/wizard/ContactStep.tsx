@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/card';
 
 export function ContactStep() {
-  const { sessionData, submitQuoteRequest, goToPrevStep } = useWizardApi();
+  const { sessionData, submitContactInfo, goToPrevStep } = useWizardApi();
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -42,19 +42,14 @@ export function ContactStep() {
 
   const onSubmit = async (data: ContactFormData) => {
     try {
-      const [firstName, ...lastNameParts] = data.name.split(' ');
-      const lastName = lastNameParts.join(' ');
-
-      const contactData = {
-        firstName,
-        lastName,
-        email: data.email,
+      // Dead simple: just send the form data as-is
+      await submitContactInfo({
+        name: data.name,
         phone: data.phone,
-      };
-
-      await submitQuoteRequest(contactData);
+        email: data.email,
+      });
     } catch (error) {
-      console.error('Failed to submit quote request:', error);
+      console.error('Failed to submit contact info:', error);
     }
   };
 

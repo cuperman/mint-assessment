@@ -47,12 +47,13 @@ interface WizardApiContextType {
   sessionData: SessionData | null;
   initializeSession: () => Promise<void>;
   submitStepAndGetNext: (stepData: StepData) => Promise<number>;
+  submitContactInfo: (contactData: { name: string; phone: string; email: string }) => Promise<boolean>;
   submitFinalQuote: (contactData: ContactData) => Promise<boolean>;
   loadSession: (sessionId: string) => Promise<void>;
   goToPrevStep: () => void;
   goToStep: (step: number) => void;
   submitQuoteRequest: (contactData: ContactData) => Promise<void>;
-  reset: () => void;
+  reset: () => Promise<void>;
 }
 
 const WizardApiContext = createContext<WizardApiContextType | undefined>(
@@ -167,18 +168,64 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
         stepData,
       });
 
-      setCurrentStep(response.nextStep);
+      // Simple logic: proceed to next step or jump to contact info
+      const nextStep = response.nextStep;
+      setCurrentStep(nextStep);
 
-      // Fetch updated session data
+      // Always fetch updated session data to keep form in sync
       const updatedSession = await wizardApiService.getSession(sessionId);
       setSessionData(updatedSession);
 
-      return response.nextStep;
+      return nextStep;
     } catch (err) {
+      // If 400 error, display on current page (don't change step)
       setError(err instanceof Error ? err.message : 'Failed to submit step');
       throw err;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const submitContactInfo = async (contactData: {
+    name: string;
+    phone: string;
+    email: string;
+  }): Promise<boolean> => {
+    if (!sessionId) {
+      throw new Error('No session ID available');
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await wizardApiService.submitContactStep(sessionId, contactData);
+      
+      if (response.success && response.status === 'submitted') {
+        setCurrentStep(6); // Go to confirmation
+        
+        // Update session data one final time
+        const updatedSession = await wizardApiService.getSession(sessionId);
+        setSessionData(updatedSession);
+        
+        return true;
+      }
+      
+      return false;
+    } catch (err) {
+      // If 400 error, display on current page (step 5)
+      setError(err instanceof Error ? err.message : 'Failed to submit contact info');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const goToPrevStep = () => {
+    // Dead simple: always go to previous step, no matter what
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      setError(null); // Clear any errors when navigating
     }
   };
 
@@ -218,10 +265,6 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const goToPrevStep = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
-
   const goToStep = (step: number) => {
     setCurrentStep(step);
   };
@@ -256,12 +299,22 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const reset = () => {
+  const reset = async () => {
     setQuoteRequest(null);
     setSessionId(null);
     setCurrentStep(1);
     setSessionData(null);
     setError(null);
+    
+    // Create a new session after reset
+    try {
+      console.log('Creating new session after reset...');
+      const sessionId = await createQuoteRequest();
+      console.log('New session created successfully with ID:', sessionId);
+    } catch (err) {
+      console.error('Failed to create new session after reset:', err);
+      setError('Failed to create new session. Please refresh the page.');
+    }
   };
 
   // Initialize session on mount
@@ -297,6 +350,7 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
     sessionData,
     initializeSession,
     submitStepAndGetNext,
+    submitContactInfo,
     submitFinalQuote,
     loadSession,
     goToPrevStep,
