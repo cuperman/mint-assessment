@@ -23,7 +23,10 @@ import {
 } from '@/components/ui/card';
 
 export function ContactStep() {
-  const { sessionData, submitContactInfo, goToPrevStep } = useWizardApi();
+  const { sessionData, submitContactInfo, goToPrevStep, quoteRequest } = useWizardApi();
+
+  // Use backend's completion status instead of calculating locally
+  const isComplete = quoteRequest?.isQuestionnaireComplete ?? false;
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -58,8 +61,10 @@ export function ContactStep() {
       <CardHeader>
         <CardTitle>Contact Information</CardTitle>
         <CardDescription>
-          Please provide your contact information to complete your quote
-          request.
+          {isComplete 
+            ? "Please provide your contact information to complete your quote request."
+            : "Please provide your contact information and we'll contact you to gather additional details for your quote."
+          }
         </CardDescription>
       </CardHeader>
       <CardContent>

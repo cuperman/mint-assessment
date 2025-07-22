@@ -82,6 +82,7 @@ export interface QuoteRequest {
   contactNumber?: string;
   emailAddress?: string;
   status: QuoteStatus;
+  isQuestionnaireComplete?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

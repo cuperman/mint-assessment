@@ -94,6 +94,8 @@ export class QuoteRequest {
   @IsEnum(QuoteStatus)
   status: QuoteStatus;
 
+  isQuestionnaireComplete?: boolean;
+
   @IsOptional()
   @IsDateString()
   createdAt?: Date;

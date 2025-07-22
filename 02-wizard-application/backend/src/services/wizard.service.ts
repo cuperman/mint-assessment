@@ -84,7 +84,7 @@ export class WizardService {
       status: quoteRequest.status,
     });
 
-    return quoteRequest;
+    return this.enhanceQuoteRequest(quoteRequest);
   }
 
   /**
@@ -115,7 +115,7 @@ export class WizardService {
     await quoteRequest.save();
 
     this.logger.log(`Successfully submitted quote request: ${sessionId}`);
-    return quoteRequest;
+    return this.enhanceQuoteRequest(quoteRequest);
   }
 
   /**
@@ -126,7 +126,7 @@ export class WizardService {
     if (!quoteRequest) {
       throw new NotFoundException(`Quote request not found: ${sessionId}`);
     }
-    return quoteRequest;
+    return this.enhanceQuoteRequest(quoteRequest);
   }
 
   /**
@@ -203,5 +203,38 @@ export class WizardService {
         `Quote request is incomplete. Missing fields: ${missingFields.join(', ')}`,
       );
     }
+  }
+
+  /**
+   * Determine if the questionnaire was completed with sufficient information
+   */
+  private isQuestionnaireComplete(quoteRequest: QuoteRequest): boolean {
+    // Check if user provided specific (non-"I don't know") answers for key questions
+    const hasSpecificACUnits =
+      this.hasValidValue(quoteRequest.acUnitQuantity) &&
+      quoteRequest.acUnitQuantity !== ACUnitQuantity.I_DONT_KNOW &&
+      quoteRequest.acUnitQuantity !== ACUnitQuantity.MORE_THAN_THREE;
+
+    const hasSpecificSystemType =
+      this.hasValidValue(quoteRequest.systemType) &&
+      quoteRequest.systemType !== SystemType.I_DONT_KNOW;
+
+    const hasSpecificHeatingType =
+      this.hasValidValue(quoteRequest.heatingType) &&
+      quoteRequest.heatingType !== HeatingType.I_DONT_KNOW;
+
+    return (
+      hasSpecificACUnits && hasSpecificSystemType && hasSpecificHeatingType
+    );
+  }
+
+  /**
+   * Enhance quote request with computed fields
+   */
+  private enhanceQuoteRequest(quoteRequest: QuoteRequest): any {
+    return {
+      ...quoteRequest.toObject(),
+      isQuestionnaireComplete: this.isQuestionnaireComplete(quoteRequest),
+    };
   }
 }

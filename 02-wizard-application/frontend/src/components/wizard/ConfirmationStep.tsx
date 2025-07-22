@@ -12,11 +12,14 @@ import {
 import { CheckCircle } from 'lucide-react';
 
 export function ConfirmationStep() {
-  const { sessionData, reset } = useWizardApi();
+  const { sessionData, reset, quoteRequest } = useWizardApi();
 
   const handleStartOver = async () => {
     await reset();
   };
+
+  // Use backend's completion status instead of calculating locally
+  const isComplete = quoteRequest?.isQuestionnaireComplete ?? false;
 
   const formatACUnits = (units?: number) => {
     if (units === undefined || units === null) return 'Not specified';
@@ -130,9 +133,10 @@ export function ConfirmationStep() {
         <div className='bg-blue-50 p-4 rounded-lg border border-blue-200'>
           <h4 className='font-medium text-blue-800 mb-2'>What&apos;s Next?</h4>
           <p className='text-blue-700 text-sm'>
-            One of our HVAC specialists will review your request and contact you
-            within 24 hours to schedule a consultation and provide your
-            personalized quote.
+            {isComplete 
+              ? "One of our HVAC specialists will review your request and contact you within 24 hours to schedule a consultation and provide your personalized quote."
+              : "One of our HVAC specialists will contact you within 24 hours to gather additional details about your system and provide your personalized quote."
+            }
           </p>
         </div>
 

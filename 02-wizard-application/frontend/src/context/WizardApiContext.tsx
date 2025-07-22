@@ -176,6 +176,10 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
       const updatedSession = await wizardApiService.getSession(sessionId);
       setSessionData(updatedSession);
 
+      // Also update the raw quote request for completion status
+      const updatedQuoteRequest = await wizardApiService.getQuoteRequest(sessionId);
+      setQuoteRequest(updatedQuoteRequest);
+
       return nextStep;
     } catch (err) {
       // If 400 error, display on current page (don't change step)
@@ -207,6 +211,10 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
         // Update session data one final time
         const updatedSession = await wizardApiService.getSession(sessionId);
         setSessionData(updatedSession);
+        
+        // Also update the raw quote request
+        const updatedQuoteRequest = await wizardApiService.getQuoteRequest(sessionId);
+        setQuoteRequest(updatedQuoteRequest);
         
         return true;
       }
@@ -258,6 +266,10 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
       setSessionData(session);
       setSessionId(sessionId);
       setCurrentStep(session.currentStep);
+      
+      // Also load the raw quote request
+      const quoteRequest = await wizardApiService.getQuoteRequest(sessionId);
+      setQuoteRequest(quoteRequest);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load session');
     } finally {
