@@ -102,3 +102,18 @@ export class QuoteRequest {
   @IsDateString()
   updatedAt?: Date;
 }
+
+export class SubmitQuoteRequest {
+  @IsNotEmpty()
+  @IsString()
+  contactName: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Matches(/^\d{10}$/, { message: 'Contact number must be exactly 10 digits' })
+  contactNumber: string;
+
+  @IsNotEmpty()
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  emailAddress: string;
+}

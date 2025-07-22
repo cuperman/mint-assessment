@@ -115,22 +115,23 @@ You can either share the repository URL or provide a ZIP file with your solution
 sequenceDiagram
    participant Frontend
    participant Backend
-   Frontend->>Backend: Create Request (POST)
-   Backend->>Frontend: Empty Request Object with Session ID (201)
-   Frontend->>Backend: Update Request (PATCH)
+   Frontend->>Backend: Create Quote Request (POST)
+   Backend->>Frontend: Session ID (201)
+   Frontend->>Backend: Questionnaire answers (PATCH)
    Backend->>Frontend: Validation error or success (400 | 200)
-   Frontend->>Backend: Confirm Request (POST)
+   Frontend->>Backend: Submit with contact info (POST)
    Backend->>Frontend: Success (200)
 ```
 
-1. The frontend starts the process by issuing a POST request on the Quote Request resource.  The server responds with an empty object and a Session ID to use in subsequent requests.
+1. The frontend starts the process by issuing a POST request on the Quote Request resource.  The server responds with a Session ID to use in subsequent requests.
 
 ```
 # example:
 POST /api/quote_request
+=> { "sessionId": "550e8400-e29b-41d4-a716-446655440000" }
 ```
 
-2. The frontend issues multiple PATCH requests on the Quote Request session with a set of key values to be validated and saved in the database.  The backend either returns validation errors or saves the record and returns the latest copy.  It may progress the state if necessary in the returned object.
+2. The frontend issues multiple PATCH requests on the Quote Request session with a set of ke/values to be validated and saved in the database.  The backend either returns validation errors or saves the record and returns the latest copy.  It may progress the state if necessary in the returned object.
 
 ```
 # example:
@@ -157,4 +158,4 @@ stateDiagram-v2
 * The backend maintains the state of the object
 * When a new Quote Request is created, it starts in Questionnaire state
 * When all questions are answered, the state is progressed to ContactInfo
-* Depending on some of the answers, backend may decide to progress to ContactInfo because all questions are answered
+* Depending on some of the answers, backend may decide to progress to ContactInfo early

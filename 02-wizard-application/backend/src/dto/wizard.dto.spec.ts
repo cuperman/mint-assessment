@@ -1,6 +1,7 @@
 import { validate } from 'class-validator';
 import {
   QuoteRequest,
+  SubmitQuoteRequest,
   ACUnitQuantity,
   SystemType,
   HeatingType,
@@ -524,6 +525,80 @@ describe('QuoteRequest DTO', () => {
 
       expect(createdError?.constraints).toHaveProperty('isDateString');
       expect(updatedError?.constraints).toHaveProperty('isDateString');
+    });
+  });
+});
+
+describe('SubmitQuoteRequest DTO', () => {
+  let submitRequest: SubmitQuoteRequest;
+
+  beforeEach(() => {
+    submitRequest = new SubmitQuoteRequest();
+    submitRequest.contactName = 'John Doe';
+    submitRequest.contactNumber = '5551234567';
+    submitRequest.emailAddress = 'john@example.com';
+  });
+
+  describe('Valid Data', () => {
+    it('should pass validation with all valid data', async () => {
+      const errors = await validate(submitRequest);
+      expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe('Contact Name Validation', () => {
+    it('should fail validation for empty contact name', async () => {
+      submitRequest.contactName = '';
+      const errors = await validate(submitRequest);
+      expect(errors.length).toBeGreaterThan(0);
+
+      const nameError = errors.find((e) => e.property === 'contactName');
+      expect(nameError?.constraints).toHaveProperty('isNotEmpty');
+    });
+  });
+
+  describe('Contact Number Validation', () => {
+    it('should fail validation for invalid contact number format', async () => {
+      submitRequest.contactNumber = '123456789'; // 9 digits instead of 10
+      const errors = await validate(submitRequest);
+      expect(errors.length).toBeGreaterThan(0);
+
+      const numberError = errors.find((e) => e.property === 'contactNumber');
+      expect(numberError?.constraints).toHaveProperty('matches');
+    });
+
+    it('should fail validation for contact number with letters', async () => {
+      submitRequest.contactNumber = '555abc1234';
+      const errors = await validate(submitRequest);
+      expect(errors.length).toBeGreaterThan(0);
+
+      const numberError = errors.find((e) => e.property === 'contactNumber');
+      expect(numberError?.constraints).toHaveProperty('matches');
+    });
+
+    it('should pass validation for valid 10-digit contact number', async () => {
+      submitRequest.contactNumber = '5551234567';
+      const errors = await validate(submitRequest);
+      const numberError = errors.find((e) => e.property === 'contactNumber');
+      expect(numberError).toBeUndefined();
+    });
+  });
+
+  describe('Email Address Validation', () => {
+    it('should fail validation for invalid email format', async () => {
+      submitRequest.emailAddress = 'not-an-email';
+      const errors = await validate(submitRequest);
+      expect(errors.length).toBeGreaterThan(0);
+
+      const emailError = errors.find((e) => e.property === 'emailAddress');
+      expect(emailError?.constraints).toHaveProperty('isEmail');
+    });
+
+    it('should pass validation for valid email', async () => {
+      submitRequest.emailAddress = 'john@example.com';
+      const errors = await validate(submitRequest);
+      const emailError = errors.find((e) => e.property === 'emailAddress');
+      expect(emailError).toBeUndefined();
     });
   });
 });

@@ -11,7 +11,10 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { WizardService } from '../services/wizard.service';
-import { QuoteRequest as QuoteRequestDto } from '../dto/wizard.dto';
+import {
+  QuoteRequest as QuoteRequestDto,
+  SubmitQuoteRequest,
+} from '../dto/wizard.dto';
 
 @Controller('api')
 export class WizardController {
@@ -82,17 +85,20 @@ export class WizardController {
   }
 
   /**
-   * Submit/complete quote request
+   * Submit/complete quote request with contact information
    * POST /quote_request/:sessionId
    */
   @Post('quote_request/:sessionId')
   async submitQuoteRequest(
     @Param('sessionId') sessionId: string,
+    @Body(ValidationPipe) submitData: SubmitQuoteRequest,
   ): Promise<QuoteRequestDto> {
     this.logger.log(`Submitting quote request: ${sessionId}`);
 
-    const submittedQuoteRequest =
-      await this.wizardService.submitQuoteRequest(sessionId);
+    const submittedQuoteRequest = await this.wizardService.submitQuoteRequest(
+      sessionId,
+      submitData,
+    );
 
     this.logger.log(`Successfully submitted quote request: ${sessionId}`);
 

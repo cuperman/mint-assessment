@@ -130,32 +130,45 @@ describe('WizardController', () => {
 
   describe('submitQuoteRequest', () => {
     const sessionId = 'test-session-id';
+    const contactData = {
+      contactName: 'John Doe',
+      contactNumber: '5551234567',
+      emailAddress: 'john@example.com',
+    };
 
-    it('should submit quote request', async () => {
+    it('should submit quote request with contact data', async () => {
       const submittedQuoteRequest = {
         ...mockQuoteRequest,
         status: QuoteStatus.SUBMITTED,
+        ...contactData,
       };
       mockWizardService.submitQuoteRequest.mockResolvedValue(
         submittedQuoteRequest,
       );
 
-      const result = await controller.submitQuoteRequest(sessionId);
+      const result = await controller.submitQuoteRequest(
+        sessionId,
+        contactData,
+      );
 
       expect(mockWizardService.submitQuoteRequest).toHaveBeenCalledWith(
         sessionId,
+        contactData,
       );
       expect(result).toBe(submittedQuoteRequest);
       expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(result.contactName).toBe(contactData.contactName);
+      expect(result.contactNumber).toBe(contactData.contactNumber);
+      expect(result.emailAddress).toBe(contactData.emailAddress);
     });
 
     it('should handle submission errors', async () => {
       const error = new Error('Submission failed');
       mockWizardService.submitQuoteRequest.mockRejectedValue(error);
 
-      await expect(controller.submitQuoteRequest(sessionId)).rejects.toThrow(
-        'Submission failed',
-      );
+      await expect(
+        controller.submitQuoteRequest(sessionId, contactData),
+      ).rejects.toThrow('Submission failed');
     });
   });
 
