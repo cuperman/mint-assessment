@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { acUnitsSchema, ACUnitsFormData } from '@/lib/schemas';
-import { useWizard } from '@/context/WizardContext';
+import { useWizardApi } from '@/context/WizardApiContext';
 import {
   Form,
   FormControl,
@@ -13,7 +13,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const AC_UNIT_OPTIONS = [
@@ -24,26 +30,51 @@ const AC_UNIT_OPTIONS = [
 ] as const;
 
 export function ACUnitsStep() {
-  const { state, setACUnits, goToNextStep, goToPrevStep } = useWizard();
+  const { sessionData, submitStepAndGetNext, goToPrevStep, isLoading } =
+    useWizardApi();
+
+  // Convert API data back to form format
+  const getFormValue = (
+    units?: number,
+  ): ACUnitsFormData['units'] | undefined => {
+    if (!units) return undefined;
+    if (units === 1) return '1';
+    if (units === 2) return '2';
+    if (units > 3) return 'more-than-3';
+    return undefined;
+  };
 
   const form = useForm<ACUnitsFormData>({
     resolver: zodResolver(acUnitsSchema),
-    defaultValues: state.acUnits || {
-      units: undefined,
+    defaultValues: {
+      units: getFormValue(sessionData?.data.acUnits?.units),
     },
   });
 
   const onSubmit = async (data: ACUnitsFormData) => {
-    setACUnits(data);
-    // Here we would normally save to backend and get next step from API
-    goToNextStep();
+    try {
+      let units: number;
+
+      if (data.units === '1') units = 1;
+      else if (data.units === '2') units = 2;
+      else if (data.units === 'more-than-3')
+        units = 4; // Use 4 to represent "more than 3"
+      else units = 0; // "I don't know" case
+
+      const acUnitsData = { units };
+      await submitStepAndGetNext(acUnitsData);
+    } catch (error) {
+      console.error('Failed to submit AC units:', error);
+    }
   };
 
   return (
     <Card className='w-full max-w-md mx-auto'>
       <CardHeader>
         <CardTitle>AC Units</CardTitle>
-        <CardDescription>How many AC units do you currently have in your home?</CardDescription>
+        <CardDescription>
+          How many AC units do you currently have in your home?
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -61,9 +92,18 @@ export function ACUnitsStep() {
                       className='grid grid-cols-1 gap-3'
                     >
                       {AC_UNIT_OPTIONS.map((option) => (
-                        <div key={option.value} className='flex items-center space-x-2'>
-                          <RadioGroupItem value={option.value} id={option.value} />
-                          <FormLabel htmlFor={option.value} className='cursor-pointer'>
+                        <div
+                          key={option.value}
+                          className='flex items-center space-x-2'
+                        >
+                          <RadioGroupItem
+                            value={option.value}
+                            id={option.value}
+                          />
+                          <FormLabel
+                            htmlFor={option.value}
+                            className='cursor-pointer'
+                          >
                             {option.label}
                           </FormLabel>
                         </div>
@@ -76,11 +116,17 @@ export function ACUnitsStep() {
             />
 
             <div className='flex gap-3'>
-              <Button type='button' variant='outline' onClick={goToPrevStep} className='flex-1'>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={goToPrevStep}
+                className='flex-1'
+                disabled={isLoading}
+              >
                 Back
               </Button>
-              <Button type='submit' className='flex-1'>
-                Continue
+              <Button type='submit' className='flex-1' disabled={isLoading}>
+                {isLoading ? 'Submitting...' : 'Continue'}
               </Button>
             </div>
           </form>

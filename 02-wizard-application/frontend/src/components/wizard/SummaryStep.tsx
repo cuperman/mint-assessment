@@ -2,7 +2,13 @@
 
 import { useWizard } from '@/context/WizardContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export function SummaryStep() {
   const { state, goToPrevStep, reset } = useWizard();
@@ -22,8 +28,8 @@ export function SummaryStep() {
           <div>
             <h3 className='font-semibold'>Address:</h3>
             <p className='text-sm text-muted-foreground'>
-              {state.address.street}, {state.address.city}, {state.address.state}{' '}
-              {state.address.zip}
+              {state.address.street}, {state.address.city},{' '}
+              {state.address.state} {state.address.zip}
             </p>
           </div>
         )}
@@ -41,10 +47,20 @@ export function SummaryStep() {
         )}
 
         <div className='flex gap-3 pt-4'>
-          <Button type='button' variant='outline' onClick={goToPrevStep} className='flex-1'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={goToPrevStep}
+            className='flex-1'
+          >
             Back
           </Button>
-          <Button type='button' variant='secondary' onClick={handleStartOver} className='flex-1'>
+          <Button
+            type='button'
+            variant='secondary'
+            onClick={handleStartOver}
+            className='flex-1'
+          >
             Start Over
           </Button>
         </div>

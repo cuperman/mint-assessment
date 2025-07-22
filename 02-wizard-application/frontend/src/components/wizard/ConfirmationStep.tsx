@@ -1,33 +1,33 @@
 'use client';
 
-import { useWizard } from '@/context/WizardContext';
+import { useWizardApi } from '@/context/WizardApiContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
 
 export function ConfirmationStep() {
-  const { state, reset } = useWizard();
+  const { sessionData, reset } = useWizardApi();
 
   const handleStartOver = () => {
     reset();
   };
 
-  const formatACUnits = (units: string) => {
-    switch (units) {
-      case '1':
-        return '1 AC Unit';
-      case '2':
-        return '2 AC Units';
-      case 'more-than-3':
-        return 'More than 3 AC Units';
-      case 'i-dont-know':
-        return "I don't know how many units";
-      default:
-        return units;
-    }
+  const formatACUnits = (units?: number) => {
+    if (!units) return 'Not specified';
+    if (units === 1) return '1 AC Unit';
+    if (units === 2) return '2 AC Units';
+    if (units > 3) return 'More than 3 AC Units';
+    return `${units} AC Units`;
   };
 
-  const formatSystemType = (type: string) => {
+  const formatSystemType = (type?: string) => {
+    if (!type) return 'Not specified';
     switch (type) {
       case 'split':
         return 'Split System';
@@ -40,7 +40,8 @@ export function ConfirmationStep() {
     }
   };
 
-  const formatHeatingType = (type: string) => {
+  const formatHeatingType = (type?: string) => {
+    if (!type) return 'Not specified';
     switch (type) {
       case 'heat-pump':
         return 'Heat Pump';
@@ -68,62 +69,78 @@ export function ConfirmationStep() {
         <div className='bg-gray-50 p-4 rounded-lg space-y-4'>
           <h3 className='font-semibold text-lg mb-3'>Request Summary:</h3>
 
-          {state.address && (
+          {sessionData?.data.address && (
             <div>
               <h4 className='font-medium text-gray-700'>Service Address:</h4>
               <p className='text-gray-600'>
-                {state.address.street}
+                {sessionData.data.address.address}
                 <br />
-                {state.address.city}, {state.address.state} {state.address.zip}
+                {sessionData.data.address.city},{' '}
+                {sessionData.data.address.state}{' '}
+                {sessionData.data.address.zipCode}
               </p>
             </div>
           )}
 
-          {state.acUnits && (
+          {sessionData?.data.acUnits && (
             <div>
               <h4 className='font-medium text-gray-700'>AC Units:</h4>
-              <p className='text-gray-600'>{formatACUnits(state.acUnits.units)}</p>
+              <p className='text-gray-600'>
+                {formatACUnits(sessionData.data.acUnits.units)}
+              </p>
             </div>
           )}
 
-          {state.systemType && (
+          {sessionData?.data.systemType && (
             <div>
               <h4 className='font-medium text-gray-700'>System Type:</h4>
-              <p className='text-gray-600'>{formatSystemType(state.systemType.type)}</p>
+              <p className='text-gray-600'>
+                {formatSystemType(sessionData.data.systemType.systemType)}
+              </p>
             </div>
           )}
 
-          {state.heatingType && (
+          {sessionData?.data.heatingType && (
             <div>
               <h4 className='font-medium text-gray-700'>Heating Type:</h4>
-              <p className='text-gray-600'>{formatHeatingType(state.heatingType.type)}</p>
+              <p className='text-gray-600'>
+                {formatHeatingType(sessionData.data.heatingType.heatingType)}
+              </p>
             </div>
           )}
 
-          {state.contact && (
+          {sessionData?.data.contact && (
             <div>
-              <h4 className='font-medium text-gray-700'>Contact Information:</h4>
+              <h4 className='font-medium text-gray-700'>
+                Contact Information:
+              </h4>
               <p className='text-gray-600'>
-                {state.contact.name}
+                {sessionData.data.contact.firstName}{' '}
+                {sessionData.data.contact.lastName}
                 <br />
-                {state.contact.phone}
+                {sessionData.data.contact.phone}
                 <br />
-                {state.contact.email}
+                {sessionData.data.contact.email}
               </p>
             </div>
           )}
         </div>
 
         <div className='bg-blue-50 p-4 rounded-lg border border-blue-200'>
-          <h4 className='font-medium text-blue-800 mb-2'>What's Next?</h4>
+          <h4 className='font-medium text-blue-800 mb-2'>What&apos;s Next?</h4>
           <p className='text-blue-700 text-sm'>
-            One of our HVAC specialists will review your request and contact you within 24 hours to
-            schedule a consultation and provide your personalized quote.
+            One of our HVAC specialists will review your request and contact you
+            within 24 hours to schedule a consultation and provide your
+            personalized quote.
           </p>
         </div>
 
         <div className='text-center pt-4'>
-          <Button onClick={handleStartOver} variant='outline' className='w-full'>
+          <Button
+            onClick={handleStartOver}
+            variant='outline'
+            className='w-full'
+          >
             Submit Another Request
           </Button>
         </div>
