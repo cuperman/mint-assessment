@@ -18,6 +18,7 @@ async function bootstrap() {
       whitelist: true, // Strip properties that don't have decorators
       forbidNonWhitelisted: true, // Throw error for non-whitelisted properties
       transform: true, // Automatically transform payloads to DTO instances
+      skipUndefinedProperties: true, // Skip undefined properties during validation
       transformOptions: {
         enableImplicitConversion: true, // Convert primitive types automatically
       },

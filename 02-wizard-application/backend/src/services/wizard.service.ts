@@ -67,25 +67,42 @@ export class WizardService {
       throw new NotFoundException(`Quote request not found: ${sessionId}`);
     }
 
-    // Update fields
-    Object.assign(quoteRequest, updateData);
+    // Filter out undefined values to only update provided fields
+    const updateFields = Object.fromEntries(
+      Object.entries(updateData).filter(([, value]) => value !== undefined),
+    );
 
-    // Auto-progress status based on completeness
-    const newStatus = this.determineStatus(quoteRequest);
-    if (newStatus !== quoteRequest.status) {
-      this.logger.log(
-        `Status transition for ${sessionId}: ${quoteRequest.status} -> ${newStatus}`,
+    // Use Mongoose's updateOne with $set for partial updates
+    await this.quoteRequestModel.updateOne(
+      { sessionId },
+      { $set: updateFields },
+    );
+
+    // Fetch the updated document
+    const updatedQuoteRequest = await this.quoteRequestModel.findOne({
+      sessionId,
+    });
+    if (!updatedQuoteRequest) {
+      throw new NotFoundException(
+        `Quote request not found after update: ${sessionId}`,
       );
-      quoteRequest.status = newStatus;
     }
 
-    await quoteRequest.save();
+    // Auto-progress status based on completeness
+    const newStatus = this.determineStatus(updatedQuoteRequest);
+    if (newStatus !== updatedQuoteRequest.status) {
+      this.logger.log(
+        `Status transition for ${sessionId}: ${updatedQuoteRequest.status} -> ${newStatus}`,
+      );
+      updatedQuoteRequest.status = newStatus;
+      await updatedQuoteRequest.save();
+    }
 
     this.logger.log(`Successfully updated quote request: ${sessionId}`, {
-      status: quoteRequest.status,
+      status: updatedQuoteRequest.status,
     });
 
-    const plainObject = quoteRequest.toObject();
+    const plainObject = updatedQuoteRequest.toObject();
     const result: QuoteRequestDto = {
       sessionId: plainObject.sessionId,
       street: plainObject.street,
@@ -99,7 +116,8 @@ export class WizardService {
       contactNumber: plainObject.contactNumber,
       emailAddress: plainObject.emailAddress,
       status: plainObject.status,
-      isQuestionnaireComplete: this.isQuestionnaireComplete(quoteRequest),
+      isQuestionnaireComplete:
+        this.isQuestionnaireComplete(updatedQuoteRequest),
       createdAt: plainObject.createdAt,
       updatedAt: plainObject.updatedAt,
     };

@@ -12,6 +12,7 @@ import {
 
 interface MockModel {
   findOne: jest.Mock;
+  updateOne: jest.Mock;
   // Constructor mock for new QuoteRequest()
   mockImplementation: jest.Mock;
 }
@@ -57,6 +58,7 @@ describe('WizardService', () => {
   beforeEach(async () => {
     mockModel = {
       findOne: jest.fn(),
+      updateOne: jest.fn(),
       mockImplementation: jest.fn(),
     } as MockModel;
 
@@ -150,7 +152,12 @@ describe('WizardService', () => {
       };
       updatedQuoteRequest.toObject.mockReturnValue(objectData);
 
-      mockModel.findOne.mockResolvedValue(updatedQuoteRequest);
+      // First findOne call to check if quote exists
+      mockModel.findOne.mockResolvedValueOnce(mockQuoteRequest);
+      // Mock updateOne to succeed
+      mockModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+      // Second findOne call to get updated document
+      mockModel.findOne.mockResolvedValueOnce(updatedQuoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, updateData);
 
@@ -158,8 +165,11 @@ describe('WizardService', () => {
       expect(result).toHaveProperty('street', updateData.street);
       expect(result).toHaveProperty('city', updateData.city);
       expect(result).toHaveProperty('isQuestionnaireComplete');
-      expect(mockModel.findOne).toHaveBeenCalledWith({ sessionId });
-      expect(updatedQuoteRequest.save).toHaveBeenCalled();
+      expect(mockModel.findOne).toHaveBeenCalledTimes(2);
+      expect(mockModel.updateOne).toHaveBeenCalledWith(
+        { sessionId },
+        { $set: updateData },
+      );
     });
 
     it('should throw NotFoundException when quote request not found', async () => {
@@ -171,9 +181,16 @@ describe('WizardService', () => {
     });
 
     it('should progress status when address and system info complete', async () => {
-      const completeSystemData = {
+      const initialData = {
         ...mockQuoteRequest,
         status: QuoteStatus.QUESTIONNAIRE,
+        save: jest.fn().mockResolvedValue(true),
+        toObject: jest.fn(),
+      };
+
+      const completeSystemData = {
+        ...initialData,
+        status: QuoteStatus.CONTACT_INFO, // Status should progress
         save: jest.fn().mockResolvedValue(true),
         toObject: jest.fn(),
       };
@@ -195,15 +212,20 @@ describe('WizardService', () => {
       };
       completeSystemData.toObject.mockReturnValue(objectData);
 
-      mockModel.findOne.mockResolvedValue(completeSystemData);
+      // First findOne call to check if quote exists
+      mockModel.findOne.mockResolvedValueOnce(initialData);
+      // Mock updateOne to succeed
+      mockModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+      // Second findOne call to get updated document
+      mockModel.findOne.mockResolvedValueOnce(completeSystemData);
 
       const result = await service.updateQuoteRequest(sessionId, {
         acUnitQuantity: ACUnitQuantity.TWO,
       });
 
-      expect(completeSystemData.status).toBe(QuoteStatus.CONTACT_INFO);
+      expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
       expect(result).toHaveProperty('isQuestionnaireComplete');
-      expect(completeSystemData.save).toHaveBeenCalled();
+      expect(mockModel.updateOne).toHaveBeenCalled();
     });
   });
 
@@ -440,30 +462,42 @@ describe('WizardService', () => {
     const sessionId = 'test-session-id';
 
     it('should progress to contact_info when AC unit quantity is "more than 3"', async () => {
-      const quoteRequest = {
+      const initialQuoteRequest = {
         sessionId,
         street: '123 Main St',
         city: 'Austin',
         state: 'TX',
         zipCode: '78701',
-        acUnitQuantity: ACUnitQuantity.MORE_THAN_THREE,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
         toObject: jest.fn(),
       };
 
-      // Configure toObject to dynamically return the current state
-      quoteRequest.toObject.mockImplementation(() => ({
-        sessionId: quoteRequest.sessionId,
-        street: quoteRequest.street,
-        city: quoteRequest.city,
-        state: quoteRequest.state,
-        zipCode: quoteRequest.zipCode,
-        acUnitQuantity: quoteRequest.acUnitQuantity,
-        status: quoteRequest.status,
+      const updatedQuoteRequest = {
+        ...initialQuoteRequest,
+        acUnitQuantity: ACUnitQuantity.MORE_THAN_THREE,
+        status: QuoteStatus.CONTACT_INFO,
+        save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
+      };
+
+      // Configure toObject to return the updated state
+      updatedQuoteRequest.toObject.mockImplementation(() => ({
+        sessionId: updatedQuoteRequest.sessionId,
+        street: updatedQuoteRequest.street,
+        city: updatedQuoteRequest.city,
+        state: updatedQuoteRequest.state,
+        zipCode: updatedQuoteRequest.zipCode,
+        acUnitQuantity: updatedQuoteRequest.acUnitQuantity,
+        status: updatedQuoteRequest.status,
       }));
 
-      mockModel.findOne.mockResolvedValue(quoteRequest);
+      // First findOne call to check if quote exists
+      mockModel.findOne.mockResolvedValueOnce(initialQuoteRequest);
+      // Mock updateOne to succeed
+      mockModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+      // Second findOne call to get updated document
+      mockModel.findOne.mockResolvedValueOnce(updatedQuoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
         acUnitQuantity: ACUnitQuantity.MORE_THAN_THREE,
@@ -474,7 +508,7 @@ describe('WizardService', () => {
     });
 
     it('should progress to contact_info when AC unit quantity is "I don\'t know"', async () => {
-      const quoteRequest = {
+      const initialQuoteRequest = {
         sessionId,
         street: '123 Main St',
         city: 'Austin',
@@ -485,17 +519,31 @@ describe('WizardService', () => {
         toObject: jest.fn(),
       };
 
-      // Configure toObject to dynamically return the current state
-      quoteRequest.toObject.mockImplementation(() => ({
-        sessionId: quoteRequest.sessionId,
-        street: quoteRequest.street,
-        city: quoteRequest.city,
-        state: quoteRequest.state,
-        zipCode: quoteRequest.zipCode,
-        status: quoteRequest.status,
+      const updatedQuoteRequest = {
+        ...initialQuoteRequest,
+        acUnitQuantity: ACUnitQuantity.I_DONT_KNOW,
+        status: QuoteStatus.CONTACT_INFO,
+        save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
+      };
+
+      // Configure toObject to return the updated state
+      updatedQuoteRequest.toObject.mockImplementation(() => ({
+        sessionId: updatedQuoteRequest.sessionId,
+        street: updatedQuoteRequest.street,
+        city: updatedQuoteRequest.city,
+        state: updatedQuoteRequest.state,
+        zipCode: updatedQuoteRequest.zipCode,
+        acUnitQuantity: updatedQuoteRequest.acUnitQuantity,
+        status: updatedQuoteRequest.status,
       }));
 
-      mockModel.findOne.mockResolvedValue(quoteRequest);
+      // First findOne call to check if quote exists
+      mockModel.findOne.mockResolvedValueOnce(initialQuoteRequest);
+      // Mock updateOne to succeed
+      mockModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+      // Second findOne call to get updated document
+      mockModel.findOne.mockResolvedValueOnce(updatedQuoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
         acUnitQuantity: ACUnitQuantity.I_DONT_KNOW,
@@ -506,7 +554,7 @@ describe('WizardService', () => {
     });
 
     it('should progress to contact_info when system type is "I don\'t know"', async () => {
-      const quoteRequest = {
+      const initialQuoteRequest = {
         sessionId,
         street: '123 Main St',
         city: 'Austin',
@@ -518,18 +566,32 @@ describe('WizardService', () => {
         toObject: jest.fn(),
       };
 
-      // Configure toObject to dynamically return the current state
-      quoteRequest.toObject.mockImplementation(() => ({
-        sessionId: quoteRequest.sessionId,
-        street: quoteRequest.street,
-        city: quoteRequest.city,
-        state: quoteRequest.state,
-        zipCode: quoteRequest.zipCode,
-        acUnitQuantity: quoteRequest.acUnitQuantity,
-        status: quoteRequest.status,
+      const updatedQuoteRequest = {
+        ...initialQuoteRequest,
+        systemType: SystemType.I_DONT_KNOW,
+        status: QuoteStatus.CONTACT_INFO,
+        save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
+      };
+
+      // Configure toObject to return the updated state
+      updatedQuoteRequest.toObject.mockImplementation(() => ({
+        sessionId: updatedQuoteRequest.sessionId,
+        street: updatedQuoteRequest.street,
+        city: updatedQuoteRequest.city,
+        state: updatedQuoteRequest.state,
+        zipCode: updatedQuoteRequest.zipCode,
+        acUnitQuantity: updatedQuoteRequest.acUnitQuantity,
+        systemType: updatedQuoteRequest.systemType,
+        status: updatedQuoteRequest.status,
       }));
 
-      mockModel.findOne.mockResolvedValue(quoteRequest);
+      // First findOne call to check if quote exists
+      mockModel.findOne.mockResolvedValueOnce(initialQuoteRequest);
+      // Mock updateOne to succeed
+      mockModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+      // Second findOne call to get updated document
+      mockModel.findOne.mockResolvedValueOnce(updatedQuoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
         systemType: SystemType.I_DONT_KNOW,
@@ -540,7 +602,7 @@ describe('WizardService', () => {
     });
 
     it('should progress to contact_info when heating type is "I don\'t know"', async () => {
-      const quoteRequest = {
+      const initialQuoteRequest = {
         sessionId,
         street: '123 Main St',
         city: 'Austin',
@@ -553,19 +615,33 @@ describe('WizardService', () => {
         toObject: jest.fn(),
       };
 
-      // Configure toObject to dynamically return the current state
-      quoteRequest.toObject.mockImplementation(() => ({
-        sessionId: quoteRequest.sessionId,
-        street: quoteRequest.street,
-        city: quoteRequest.city,
-        state: quoteRequest.state,
-        zipCode: quoteRequest.zipCode,
-        acUnitQuantity: quoteRequest.acUnitQuantity,
-        systemType: quoteRequest.systemType,
-        status: quoteRequest.status,
+      const updatedQuoteRequest = {
+        ...initialQuoteRequest,
+        heatingType: HeatingType.I_DONT_KNOW,
+        status: QuoteStatus.CONTACT_INFO,
+        save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
+      };
+
+      // Configure toObject to return the updated state
+      updatedQuoteRequest.toObject.mockImplementation(() => ({
+        sessionId: updatedQuoteRequest.sessionId,
+        street: updatedQuoteRequest.street,
+        city: updatedQuoteRequest.city,
+        state: updatedQuoteRequest.state,
+        zipCode: updatedQuoteRequest.zipCode,
+        acUnitQuantity: updatedQuoteRequest.acUnitQuantity,
+        systemType: updatedQuoteRequest.systemType,
+        heatingType: updatedQuoteRequest.heatingType,
+        status: updatedQuoteRequest.status,
       }));
 
-      mockModel.findOne.mockResolvedValue(quoteRequest);
+      // First findOne call to check if quote exists
+      mockModel.findOne.mockResolvedValueOnce(initialQuoteRequest);
+      // Mock updateOne to succeed
+      mockModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+      // Second findOne call to get updated document
+      mockModel.findOne.mockResolvedValueOnce(updatedQuoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
         heatingType: HeatingType.I_DONT_KNOW,
@@ -576,32 +652,44 @@ describe('WizardService', () => {
     });
 
     it('should stay in questionnaire status when all values are known', async () => {
-      const quoteRequest = {
+      const initialQuoteRequest = {
         sessionId,
         street: '123 Main St',
         city: 'Austin',
         state: 'TX',
         zipCode: '78701',
         acUnitQuantity: ACUnitQuantity.TWO,
-        systemType: SystemType.SPLIT,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
         toObject: jest.fn(),
       };
 
+      const updatedQuoteRequest = {
+        ...initialQuoteRequest,
+        systemType: SystemType.SPLIT,
+        status: QuoteStatus.QUESTIONNAIRE, // Should stay in questionnaire
+        save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
+      };
+
       // Configure toObject to return the object data
-      quoteRequest.toObject.mockImplementation(() => ({
-        sessionId: quoteRequest.sessionId,
-        street: quoteRequest.street,
-        city: quoteRequest.city,
-        state: quoteRequest.state,
-        zipCode: quoteRequest.zipCode,
-        acUnitQuantity: quoteRequest.acUnitQuantity,
-        systemType: quoteRequest.systemType,
-        status: quoteRequest.status,
+      updatedQuoteRequest.toObject.mockImplementation(() => ({
+        sessionId: updatedQuoteRequest.sessionId,
+        street: updatedQuoteRequest.street,
+        city: updatedQuoteRequest.city,
+        state: updatedQuoteRequest.state,
+        zipCode: updatedQuoteRequest.zipCode,
+        acUnitQuantity: updatedQuoteRequest.acUnitQuantity,
+        systemType: updatedQuoteRequest.systemType,
+        status: updatedQuoteRequest.status,
       }));
 
-      mockModel.findOne.mockResolvedValue(quoteRequest);
+      // First findOne call to check if quote exists
+      mockModel.findOne.mockResolvedValueOnce(initialQuoteRequest);
+      // Mock updateOne to succeed
+      mockModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
+      // Second findOne call to get updated document
+      mockModel.findOne.mockResolvedValueOnce(updatedQuoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
         systemType: SystemType.SPLIT,
