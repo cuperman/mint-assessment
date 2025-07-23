@@ -23,6 +23,19 @@ export class WizardController {
   constructor(private readonly wizardService: WizardService) {}
 
   /**
+   * Health check endpoint
+   * GET /health
+   */
+  @Get('health')
+  health() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      service: 'wizard-backend',
+    };
+  }
+
+  /**
    * Create new quote request with empty object and session ID
    * POST /quote_request
    */
