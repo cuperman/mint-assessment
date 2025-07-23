@@ -270,6 +270,7 @@ class WizardApiService {
       nextStep,
       isComplete: nextStep >= 6,
       sessionId,
+      updatedQuoteRequest, // Include the updated quote request data
     };
   }
 
@@ -278,18 +279,19 @@ class WizardApiService {
     name: string;
     phone: string;
     email: string;
-  }): Promise<{ success: boolean; status: string }> {
+  }): Promise<{ success: boolean; status: string; quoteRequest: QuoteRequest }> {
     const submitData: SubmitQuoteRequestNew = {
       contactName: contactData.name,
       contactNumber: contactData.phone.replace(/\D/g, ''), // Remove non-digits
       emailAddress: contactData.email,
     };
 
-    await this.submitQuoteRequest(sessionId, submitData);
+    const quoteRequest = await this.submitQuoteRequest(sessionId, submitData);
     
     return {
       success: true,
-      status: 'submitted'
+      status: 'submitted',
+      quoteRequest
     };
   }
 

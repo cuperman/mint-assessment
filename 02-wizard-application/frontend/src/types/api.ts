@@ -117,6 +117,7 @@ export interface NextStepResponse {
   nextStep: number;
   isComplete: boolean;
   sessionId: string;
+  updatedQuoteRequest: QuoteRequest;
 }
 
 export interface SubmitQuoteRequest {
