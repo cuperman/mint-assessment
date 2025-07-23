@@ -172,13 +172,13 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
       const nextStep = response.nextStep;
       setCurrentStep(nextStep);
 
-      // Always fetch updated session data to keep form in sync
-      const updatedSession = await wizardApiService.getSession(sessionId);
-      setSessionData(updatedSession);
-
-      // Also update the raw quote request for completion status
-      const updatedQuoteRequest = await wizardApiService.getQuoteRequest(sessionId);
+      // Use the updated quote request data from the response - no GET requests needed!
+      const updatedQuoteRequest = response.updatedQuoteRequest;
       setQuoteRequest(updatedQuoteRequest);
+      
+      // Convert QuoteRequest to SessionData for legacy components
+      const sessionData = convertQuoteRequestToSessionData(updatedQuoteRequest, nextStep);
+      setSessionData(sessionData);
 
       return nextStep;
     } catch (err) {
@@ -208,13 +208,12 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
       if (response.success && response.status === 'submitted') {
         setCurrentStep(6); // Go to confirmation
         
-        // Update session data one final time
-        const updatedSession = await wizardApiService.getSession(sessionId);
-        setSessionData(updatedSession);
+        // Use the returned quote request data - no GET requests needed!
+        setQuoteRequest(response.quoteRequest);
         
-        // Also update the raw quote request
-        const updatedQuoteRequest = await wizardApiService.getQuoteRequest(sessionId);
-        setQuoteRequest(updatedQuoteRequest);
+        // Convert quote request to session data format for legacy components
+        const sessionData = convertQuoteRequestToSessionData(response.quoteRequest, 6);
+        setSessionData(sessionData);
         
         return true;
       }
@@ -334,8 +333,18 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
     const initSession = async () => {
       try {
         console.log('Initializing session...');
-        const sessionId = await createQuoteRequest();
-        console.log('Session initialized successfully with ID:', sessionId);
+        const result = await handleApiCall(
+          () => wizardApiService.createQuoteRequest(),
+          (response) => {
+            const newQuoteRequest: QuoteRequest = {
+              sessionId: response.sessionId,
+              status: QuoteStatus.QUESTIONNAIRE,
+            };
+            setQuoteRequest(newQuoteRequest);
+            setSessionId(response.sessionId); // Update legacy state too
+          },
+        );
+        console.log('Session initialized successfully with ID:', result?.sessionId);
       } catch (err) {
         console.error('Failed to initialize session:', err);
       }
@@ -470,3 +479,53 @@ export const mapContactToUpdateRequest = (contact: {
   contactNumber: contact.phone.replace(/\D/g, ''), // Remove non-digits
   emailAddress: contact.email,
 });
+
+// Helper function to convert QuoteRequest to SessionData for legacy components
+const convertQuoteRequestToSessionData = (quoteRequest: QuoteRequest, currentStep: number): SessionData => {
+  // Convert AC unit quantity to number for legacy format
+  const getACUnitsNumber = (quantity?: ACUnitQuantity): number | undefined => {
+    if (!quantity) return undefined;
+    switch (quantity) {
+      case ACUnitQuantity.ONE:
+        return 1;
+      case ACUnitQuantity.TWO:
+        return 2;
+      case ACUnitQuantity.MORE_THAN_THREE:
+        return 4; // Use 4 to represent "more than 3"
+      case ACUnitQuantity.I_DONT_KNOW:
+        return 0; // Use 0 for "I don't know"
+      default:
+        return undefined;
+    }
+  };
+
+  return {
+    sessionId: quoteRequest.sessionId,
+    currentStep,
+    isCompleted: quoteRequest.status === QuoteStatus.SUBMITTED,
+    data: {
+      address: quoteRequest.street ? {
+        address: quoteRequest.street,
+        city: quoteRequest.city || '',
+        state: quoteRequest.state || '',
+        zipCode: quoteRequest.zipCode || '',
+      } : undefined,
+      acUnits: quoteRequest.acUnitQuantity ? {
+        units: getACUnitsNumber(quoteRequest.acUnitQuantity) || 0,
+      } : undefined,
+      systemType: quoteRequest.systemType ? {
+        systemType: quoteRequest.systemType,
+      } : undefined,
+      heatingType: quoteRequest.heatingType ? {
+        heatingType: quoteRequest.heatingType,
+        hasExistingDucts: 'unknown', // Default value
+      } : undefined,
+      contact: quoteRequest.contactName ? {
+        firstName: quoteRequest.contactName, // Map full name to firstName for legacy compatibility
+        lastName: '', // Legacy format expects separate fields
+        email: quoteRequest.emailAddress || '',
+        phone: quoteRequest.contactNumber || '',
+      } : undefined,
+    },
+  };
+};
