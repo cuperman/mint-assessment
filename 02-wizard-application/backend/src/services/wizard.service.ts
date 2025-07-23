@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import { QuoteRequest } from '../schemas/wizard.schema';
 import {
   QuoteRequest as QuoteRequestDto,
+  UpdateQuoteRequest,
   SubmitQuoteRequest,
   QuoteStatus,
   ACUnitQuantity,
@@ -54,7 +55,7 @@ export class WizardService {
    */
   async updateQuoteRequest(
     sessionId: string,
-    updateData: Partial<QuoteRequestDto>,
+    updateData: UpdateQuoteRequest,
   ): Promise<QuoteRequestDto> {
     this.logger.log(`Updating quote request ${sessionId}`, {
       sessionId,
