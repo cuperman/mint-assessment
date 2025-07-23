@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsUUID,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export enum ACUnitQuantity {
   ONE = '1',
@@ -76,6 +77,10 @@ export class QuoteRequest {
 
   @IsNotEmpty()
   @IsString()
+  @Transform(({ value }) => {
+    // Strip all non-digit characters from phone number
+    return typeof value === 'string' ? value.replace(/\D/g, '') : '';
+  })
   @Matches(/^\d{10}$/, { message: 'Contact number must be exactly 10 digits' })
   contactNumber: string;
 
@@ -105,6 +110,10 @@ export class SubmitQuoteRequest {
 
   @IsNotEmpty()
   @IsString()
+  @Transform(({ value }) => {
+    // Strip all non-digit characters from phone number
+    return typeof value === 'string' ? value.replace(/\D/g, '') : '';
+  })
   @Matches(/^\d{10}$/, { message: 'Contact number must be exactly 10 digits' })
   contactNumber: string;
 

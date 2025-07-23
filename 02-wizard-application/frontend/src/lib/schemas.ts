@@ -32,10 +32,12 @@ export const contactSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   phone: z
     .string()
-    .regex(
-      /^\(?(\d{3})\)?[-. ]?(\d{3})[-. ]?(\d{4})$/,
-      'Invalid phone number format',
-    ),
+    .min(1, 'Phone number is required')
+    .refine((val) => {
+      // Remove all non-digit characters and check if we have exactly 10 digits
+      const digits = val.replace(/\D/g, '');
+      return digits.length === 10;
+    }, 'Phone number must be exactly 10 digits'),
   email: z.string().email('Invalid email address'),
 });
 
