@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { acUnitsSchema, ACUnitsFormData } from '@/lib/schemas';
 import { useWizardApi } from '@/context/WizardApiContext';
+import { useWizard } from '@/context/WizardContext';
 import {
   Form,
   FormControl,
@@ -30,30 +32,41 @@ const AC_UNIT_OPTIONS = [
 ] as const;
 
 export function ACUnitsStep() {
-  const { sessionData, submitStepAndGetNext, goToPrevStep, isLoading } =
-    useWizardApi();
-
-  // Convert API data back to form format
-  const getFormValue = (
-    units?: number,
-  ): ACUnitsFormData['units'] | undefined => {
-    if (units === undefined) return undefined;
-    if (units === 1) return '1';
-    if (units === 2) return '2';
-    if (units > 2) return 'more_than_three';
-    if (units === 0) return 'i_dont_know'; // Handle "I don't know" case
-    return undefined;
-  };
+  const { submitStepAndGetNext, goToPrevStep, isLoading } = useWizardApi();
+  const { state, updateACUnits } = useWizard();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ACUnitsFormData>({
     resolver: zodResolver(acUnitsSchema),
     defaultValues: {
-      units: getFormValue(sessionData?.data.acUnits?.units),
+      units: state.acUnits?.units,
     },
   });
 
+  // Watch all form values for real-time updates
+  const watchedValues = form.watch();
+
+  // Save to wizard context whenever form values change
+  useEffect(() => {
+    const values = form.getValues();
+    // Only update if values have actually changed to avoid infinite loops
+    if (JSON.stringify(values) !== JSON.stringify(state.acUnits)) {
+      updateACUnits(values);
+    }
+  }, [watchedValues, form, state.acUnits, updateACUnits]);
+
+  // Update form when centralized state changes (e.g., when navigating back)
+  useEffect(() => {
+    if (state.acUnits) {
+      form.reset({
+        units: state.acUnits.units,
+      });
+    }
+  }, [state.acUnits, form]);
+
   const onSubmit = async (data: ACUnitsFormData) => {
     try {
+      setIsSubmitting(true);
       let units: number;
 
       if (data.units === '1') units = 1;
@@ -67,6 +80,8 @@ export function ACUnitsStep() {
       await submitStepAndGetNext(acUnitsData);
     } catch (error) {
       console.error('Failed to submit AC units:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -123,12 +138,16 @@ export function ACUnitsStep() {
                 variant='outline'
                 onClick={goToPrevStep}
                 className='flex-1'
-                disabled={isLoading}
+                disabled={isLoading || isSubmitting}
               >
                 Back
               </Button>
-              <Button type='submit' className='flex-1' disabled={isLoading}>
-                {isLoading ? 'Submitting...' : 'Continue'}
+              <Button
+                type='submit'
+                className='flex-1'
+                disabled={isLoading || isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Continue'}
               </Button>
             </div>
           </form>

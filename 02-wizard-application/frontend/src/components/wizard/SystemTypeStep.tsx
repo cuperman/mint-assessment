@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { systemTypeSchema, SystemTypeFormData } from '@/lib/schemas';
 import { useWizardApi } from '@/context/WizardApiContext';
+import { useWizard } from '@/context/WizardContext';
 import {
   Form,
   FormControl,
@@ -29,22 +31,41 @@ const SYSTEM_TYPE_OPTIONS = [
 ] as const;
 
 export function SystemTypeStep() {
-  const { sessionData, submitStepAndGetNext, goToPrevStep } = useWizardApi();
+  const { submitStepAndGetNext, goToPrevStep, isLoading } = useWizardApi();
+  const { state, updateSystemType } = useWizard();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<SystemTypeFormData>({
     resolver: zodResolver(systemTypeSchema),
-    defaultValues: sessionData?.data.systemType
-      ? {
-          type: sessionData.data.systemType
-            .systemType as SystemTypeFormData['type'],
-        }
-      : {
-          type: undefined,
-        },
+    defaultValues: {
+      type: state.systemType?.type,
+    },
   });
+
+  // Watch all form values for real-time updates
+  const watchedValues = form.watch();
+
+  // Save to wizard context whenever form values change
+  useEffect(() => {
+    const values = form.getValues();
+    // Only update if values have actually changed to avoid infinite loops
+    if (JSON.stringify(values) !== JSON.stringify(state.systemType)) {
+      updateSystemType(values);
+    }
+  }, [watchedValues, form, state.systemType, updateSystemType]);
+
+  // Update form when centralized state changes (e.g., when navigating back)
+  useEffect(() => {
+    if (state.systemType) {
+      form.reset({
+        type: state.systemType.type,
+      });
+    }
+  }, [state.systemType, form]);
 
   const onSubmit = async (data: SystemTypeFormData) => {
     try {
+      setIsSubmitting(true);
       const systemTypeData = {
         systemType: data.type,
         customType: data.type === 'i_dont_know' ? undefined : data.type,
@@ -52,6 +73,8 @@ export function SystemTypeStep() {
       await submitStepAndGetNext(systemTypeData);
     } catch (error) {
       console.error('Failed to submit system type:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -108,11 +131,16 @@ export function SystemTypeStep() {
                 variant='outline'
                 onClick={goToPrevStep}
                 className='flex-1'
+                disabled={isLoading || isSubmitting}
               >
                 Back
               </Button>
-              <Button type='submit' className='flex-1'>
-                Continue
+              <Button
+                type='submit'
+                className='flex-1'
+                disabled={isLoading || isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Continue'}
               </Button>
             </div>
           </form>
