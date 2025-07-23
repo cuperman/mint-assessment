@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/card';
 
 export function AddressStep() {
-  const { sessionData, submitStepAndGetNext, isLoading } = useWizardApi();
+  const { submitStepAndGetNext, isLoading } = useWizardApi();
   const { state, updateAddress } = useWizard();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
