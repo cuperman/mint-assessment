@@ -47,7 +47,11 @@ interface WizardApiContextType {
   sessionData: SessionData | null;
   initializeSession: () => Promise<void>;
   submitStepAndGetNext: (stepData: StepData) => Promise<number>;
-  submitContactInfo: (contactData: { name: string; phone: string; email: string }) => Promise<boolean>;
+  submitContactInfo: (contactData: {
+    name: string;
+    phone: string;
+    email: string;
+  }) => Promise<boolean>;
   submitFinalQuote: (contactData: ContactData) => Promise<boolean>;
   loadSession: (sessionId: string) => Promise<void>;
   goToPrevStep: () => void;
@@ -175,9 +179,12 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
       // Use the updated quote request data from the response - no GET requests needed!
       const updatedQuoteRequest = response.updatedQuoteRequest;
       setQuoteRequest(updatedQuoteRequest);
-      
+
       // Convert QuoteRequest to SessionData for legacy components
-      const sessionData = convertQuoteRequestToSessionData(updatedQuoteRequest, nextStep);
+      const sessionData = convertQuoteRequestToSessionData(
+        updatedQuoteRequest,
+        nextStep,
+      );
       setSessionData(sessionData);
 
       return nextStep;
@@ -203,25 +210,33 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
 
-      const response = await wizardApiService.submitContactStep(sessionId, contactData);
-      
+      const response = await wizardApiService.submitContactStep(
+        sessionId,
+        contactData,
+      );
+
       if (response.success && response.status === 'submitted') {
         setCurrentStep(6); // Go to confirmation
-        
+
         // Use the returned quote request data - no GET requests needed!
         setQuoteRequest(response.quoteRequest);
-        
+
         // Convert quote request to session data format for legacy components
-        const sessionData = convertQuoteRequestToSessionData(response.quoteRequest, 6);
+        const sessionData = convertQuoteRequestToSessionData(
+          response.quoteRequest,
+          6,
+        );
         setSessionData(sessionData);
-        
+
         return true;
       }
-      
+
       return false;
     } catch (err) {
       // If 400 error, display on current page (step 5)
-      setError(err instanceof Error ? err.message : 'Failed to submit contact info');
+      setError(
+        err instanceof Error ? err.message : 'Failed to submit contact info',
+      );
       throw err;
     } finally {
       setIsLoading(false);
@@ -265,7 +280,7 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
       setSessionData(session);
       setSessionId(sessionId);
       setCurrentStep(session.currentStep);
-      
+
       // Also load the raw quote request
       const quoteRequest = await wizardApiService.getQuoteRequest(sessionId);
       setQuoteRequest(quoteRequest);
@@ -316,7 +331,7 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
     setCurrentStep(1);
     setSessionData(null);
     setError(null);
-    
+
     // Create a new session after reset
     try {
       console.log('Creating new session after reset...');
@@ -344,7 +359,10 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
             setSessionId(response.sessionId); // Update legacy state too
           },
         );
-        console.log('Session initialized successfully with ID:', result?.sessionId);
+        console.log(
+          'Session initialized successfully with ID:',
+          result?.sessionId,
+        );
       } catch (err) {
         console.error('Failed to initialize session:', err);
       }
@@ -481,7 +499,10 @@ export const mapContactToUpdateRequest = (contact: {
 });
 
 // Helper function to convert QuoteRequest to SessionData for legacy components
-const convertQuoteRequestToSessionData = (quoteRequest: QuoteRequest, currentStep: number): SessionData => {
+const convertQuoteRequestToSessionData = (
+  quoteRequest: QuoteRequest,
+  currentStep: number,
+): SessionData => {
   // Convert AC unit quantity to number for legacy format
   const getACUnitsNumber = (quantity?: ACUnitQuantity): number | undefined => {
     if (!quantity) return undefined;
@@ -504,28 +525,38 @@ const convertQuoteRequestToSessionData = (quoteRequest: QuoteRequest, currentSte
     currentStep,
     isCompleted: quoteRequest.status === QuoteStatus.SUBMITTED,
     data: {
-      address: quoteRequest.street ? {
-        address: quoteRequest.street,
-        city: quoteRequest.city || '',
-        state: quoteRequest.state || '',
-        zipCode: quoteRequest.zipCode || '',
-      } : undefined,
-      acUnits: quoteRequest.acUnitQuantity ? {
-        units: getACUnitsNumber(quoteRequest.acUnitQuantity) || 0,
-      } : undefined,
-      systemType: quoteRequest.systemType ? {
-        systemType: quoteRequest.systemType,
-      } : undefined,
-      heatingType: quoteRequest.heatingType ? {
-        heatingType: quoteRequest.heatingType,
-        hasExistingDucts: 'unknown', // Default value
-      } : undefined,
-      contact: quoteRequest.contactName ? {
-        firstName: quoteRequest.contactName, // Map full name to firstName for legacy compatibility
-        lastName: '', // Legacy format expects separate fields
-        email: quoteRequest.emailAddress || '',
-        phone: quoteRequest.contactNumber || '',
-      } : undefined,
+      address: quoteRequest.street
+        ? {
+            address: quoteRequest.street,
+            city: quoteRequest.city || '',
+            state: quoteRequest.state || '',
+            zipCode: quoteRequest.zipCode || '',
+          }
+        : undefined,
+      acUnits: quoteRequest.acUnitQuantity
+        ? {
+            units: getACUnitsNumber(quoteRequest.acUnitQuantity) || 0,
+          }
+        : undefined,
+      systemType: quoteRequest.systemType
+        ? {
+            systemType: quoteRequest.systemType,
+          }
+        : undefined,
+      heatingType: quoteRequest.heatingType
+        ? {
+            heatingType: quoteRequest.heatingType,
+            hasExistingDucts: 'unknown', // Default value
+          }
+        : undefined,
+      contact: quoteRequest.contactName
+        ? {
+            firstName: quoteRequest.contactName, // Map full name to firstName for legacy compatibility
+            lastName: '', // Legacy format expects separate fields
+            email: quoteRequest.emailAddress || '',
+            phone: quoteRequest.contactNumber || '',
+          }
+        : undefined,
     },
   };
 };
