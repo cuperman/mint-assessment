@@ -342,7 +342,6 @@ export function WizardApiProvider({ children }: { children: ReactNode }) {
     };
 
     initSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
   const value: WizardApiContextType = {

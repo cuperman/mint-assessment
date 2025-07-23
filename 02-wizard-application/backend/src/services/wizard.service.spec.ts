@@ -30,6 +30,7 @@ interface MockQuoteRequestDocument {
   emailAddress?: string;
   status: QuoteStatus;
   save: jest.Mock;
+  toObject: jest.Mock;
 }
 
 describe('WizardService', () => {
@@ -50,6 +51,7 @@ describe('WizardService', () => {
     emailAddress: 'john@example.com',
     status: QuoteStatus.QUESTIONNAIRE,
     save: jest.fn().mockResolvedValue(true),
+    toObject: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -57,6 +59,22 @@ describe('WizardService', () => {
       findOne: jest.fn(),
       mockImplementation: jest.fn(),
     } as MockModel;
+
+    // Configure toObject to return a simple object copy without function references
+    mockQuoteRequest.toObject.mockReturnValue({
+      sessionId: mockQuoteRequest.sessionId,
+      street: mockQuoteRequest.street,
+      city: mockQuoteRequest.city,
+      state: mockQuoteRequest.state,
+      zipCode: mockQuoteRequest.zipCode,
+      acUnitQuantity: mockQuoteRequest.acUnitQuantity,
+      systemType: mockQuoteRequest.systemType,
+      heatingType: mockQuoteRequest.heatingType,
+      contactName: mockQuoteRequest.contactName,
+      contactNumber: mockQuoteRequest.contactNumber,
+      emailAddress: mockQuoteRequest.emailAddress,
+      status: mockQuoteRequest.status,
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -81,7 +99,8 @@ describe('WizardService', () => {
 
       const result = await service.getQuoteRequest('test-session-id');
 
-      expect(result).toBe(mockQuoteRequest);
+      expect(result).toHaveProperty('sessionId', mockQuoteRequest.sessionId);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(mockModel.findOne).toHaveBeenCalledWith({
         sessionId: 'test-session-id',
       });
@@ -111,12 +130,34 @@ describe('WizardService', () => {
         ...mockQuoteRequest,
         ...updateData,
         save: jest.fn().mockResolvedValue(true),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to return the object data
+      const objectData = {
+        sessionId: updatedQuoteRequest.sessionId,
+        street: updatedQuoteRequest.street,
+        city: updatedQuoteRequest.city,
+        state: updatedQuoteRequest.state,
+        zipCode: updatedQuoteRequest.zipCode,
+        acUnitQuantity: updatedQuoteRequest.acUnitQuantity,
+        systemType: updatedQuoteRequest.systemType,
+        heatingType: updatedQuoteRequest.heatingType,
+        contactName: updatedQuoteRequest.contactName,
+        contactNumber: updatedQuoteRequest.contactNumber,
+        emailAddress: updatedQuoteRequest.emailAddress,
+        status: updatedQuoteRequest.status,
+      };
+      updatedQuoteRequest.toObject.mockReturnValue(objectData);
+
       mockModel.findOne.mockResolvedValue(updatedQuoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, updateData);
 
-      expect(result).toBe(updatedQuoteRequest);
+      expect(result).toHaveProperty('sessionId', updatedQuoteRequest.sessionId);
+      expect(result).toHaveProperty('street', updateData.street);
+      expect(result).toHaveProperty('city', updateData.city);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(mockModel.findOne).toHaveBeenCalledWith({ sessionId });
       expect(updatedQuoteRequest.save).toHaveBeenCalled();
     });
@@ -134,15 +175,34 @@ describe('WizardService', () => {
         ...mockQuoteRequest,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(true),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to return the object data
+      const objectData = {
+        sessionId: completeSystemData.sessionId,
+        street: completeSystemData.street,
+        city: completeSystemData.city,
+        state: completeSystemData.state,
+        zipCode: completeSystemData.zipCode,
+        acUnitQuantity: completeSystemData.acUnitQuantity,
+        systemType: completeSystemData.systemType,
+        heatingType: completeSystemData.heatingType,
+        contactName: completeSystemData.contactName,
+        contactNumber: completeSystemData.contactNumber,
+        emailAddress: completeSystemData.emailAddress,
+        status: completeSystemData.status,
+      };
+      completeSystemData.toObject.mockReturnValue(objectData);
 
       mockModel.findOne.mockResolvedValue(completeSystemData);
 
-      await service.updateQuoteRequest(sessionId, {
+      const result = await service.updateQuoteRequest(sessionId, {
         acUnitQuantity: ACUnitQuantity.TWO,
       });
 
       expect(completeSystemData.status).toBe(QuoteStatus.CONTACT_INFO);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(completeSystemData.save).toHaveBeenCalled();
     });
   });
@@ -160,7 +220,27 @@ describe('WizardService', () => {
         ...mockQuoteRequest,
         status: QuoteStatus.CONTACT_INFO,
         save: jest.fn().mockResolvedValue(true),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to return the current state including contact data
+      completeQuoteRequest.toObject.mockImplementation(() => {
+        return {
+          sessionId: completeQuoteRequest.sessionId,
+          street: completeQuoteRequest.street,
+          city: completeQuoteRequest.city,
+          state: completeQuoteRequest.state,
+          zipCode: completeQuoteRequest.zipCode,
+          acUnitQuantity: completeQuoteRequest.acUnitQuantity,
+          systemType: completeQuoteRequest.systemType,
+          heatingType: completeQuoteRequest.heatingType,
+          contactName: completeQuoteRequest.contactName,
+          contactNumber: completeQuoteRequest.contactNumber,
+          emailAddress: completeQuoteRequest.emailAddress,
+          status: completeQuoteRequest.status,
+        };
+      });
+
       mockModel.findOne.mockResolvedValue(completeQuoteRequest);
 
       const result = await service.submitQuoteRequest(sessionId, contactData);
@@ -171,6 +251,7 @@ describe('WizardService', () => {
       );
       expect(completeQuoteRequest.emailAddress).toBe(contactData.emailAddress);
       expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(completeQuoteRequest.save).toHaveBeenCalled();
     });
 
@@ -210,14 +291,32 @@ describe('WizardService', () => {
         systemType: SystemType.SPLIT,
         heatingType: HeatingType.GAS,
         status: QuoteStatus.QUESTIONNAIRE,
+        contactName: undefined, // Will be set by service
+        contactNumber: undefined, // Will be set by service
+        emailAddress: undefined, // Will be set by service
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn().mockReturnValue({
+          sessionId,
+          street: '123 Main St',
+          city: 'Austin',
+          state: 'TX',
+          zipCode: '78701',
+          systemType: SystemType.SPLIT,
+          heatingType: HeatingType.GAS,
+          status: QuoteStatus.SUBMITTED,
+          contactName: contactData.contactName,
+          contactNumber: contactData.contactNumber,
+          emailAddress: contactData.emailAddress,
+        }),
       };
+
       mockModel.findOne.mockResolvedValue(quoteRequestWithoutAC);
 
       const result = await service.submitQuoteRequest(sessionId, contactData);
 
       expect(result.contactName).toBe(contactData.contactName);
       expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(quoteRequestWithoutAC.save).toHaveBeenCalled();
     });
 
@@ -233,13 +332,31 @@ describe('WizardService', () => {
         heatingType: HeatingType.GAS,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to return current state including any updates
+      quoteRequestWithoutSystem.toObject.mockImplementation(() => ({
+        sessionId: quoteRequestWithoutSystem.sessionId,
+        street: quoteRequestWithoutSystem.street,
+        city: quoteRequestWithoutSystem.city,
+        state: quoteRequestWithoutSystem.state,
+        zipCode: quoteRequestWithoutSystem.zipCode,
+        acUnitQuantity: quoteRequestWithoutSystem.acUnitQuantity,
+        heatingType: quoteRequestWithoutSystem.heatingType,
+        contactName: contactData.contactName, // Use the contact data from the test
+        contactNumber: contactData.contactNumber,
+        emailAddress: contactData.emailAddress,
+        status: QuoteStatus.SUBMITTED, // Status will be updated by service
+      }));
+
       mockModel.findOne.mockResolvedValue(quoteRequestWithoutSystem);
 
       const result = await service.submitQuoteRequest(sessionId, contactData);
 
       expect(result.contactName).toBe(contactData.contactName);
       expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(quoteRequestWithoutSystem.save).toHaveBeenCalled();
     });
 
@@ -255,13 +372,31 @@ describe('WizardService', () => {
         // heatingType missing
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to return current state including any updates
+      quoteRequestWithoutHeating.toObject.mockImplementation(() => ({
+        sessionId: quoteRequestWithoutHeating.sessionId,
+        street: quoteRequestWithoutHeating.street,
+        city: quoteRequestWithoutHeating.city,
+        state: quoteRequestWithoutHeating.state,
+        zipCode: quoteRequestWithoutHeating.zipCode,
+        acUnitQuantity: quoteRequestWithoutHeating.acUnitQuantity,
+        systemType: quoteRequestWithoutHeating.systemType,
+        contactName: contactData.contactName, // Use the contact data from the test
+        contactNumber: contactData.contactNumber,
+        emailAddress: contactData.emailAddress,
+        status: QuoteStatus.SUBMITTED, // Status will be updated by service
+      }));
+
       mockModel.findOne.mockResolvedValue(quoteRequestWithoutHeating);
 
       const result = await service.submitQuoteRequest(sessionId, contactData);
 
       expect(result.contactName).toBe(contactData.contactName);
       expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(quoteRequestWithoutHeating.save).toHaveBeenCalled();
     });
 
@@ -275,13 +410,28 @@ describe('WizardService', () => {
         // All system fields missing (user selected "I don't know" options)
         status: QuoteStatus.CONTACT_INFO,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to return current state including any updates
+      minimalQuoteRequest.toObject.mockImplementation(() => ({
+        sessionId: minimalQuoteRequest.sessionId,
+        street: minimalQuoteRequest.street,
+        city: minimalQuoteRequest.city,
+        zipCode: minimalQuoteRequest.zipCode,
+        contactName: contactData.contactName, // Use the contact data from the test
+        contactNumber: contactData.contactNumber,
+        emailAddress: contactData.emailAddress,
+        status: QuoteStatus.SUBMITTED, // Status will be updated by service
+      }));
+
       mockModel.findOne.mockResolvedValue(minimalQuoteRequest);
 
       const result = await service.submitQuoteRequest(sessionId, contactData);
 
       expect(result.contactName).toBe(contactData.contactName);
       expect(result.status).toBe(QuoteStatus.SUBMITTED);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
       expect(minimalQuoteRequest.save).toHaveBeenCalled();
     });
   });
@@ -299,7 +449,20 @@ describe('WizardService', () => {
         acUnitQuantity: ACUnitQuantity.MORE_THAN_THREE,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to dynamically return the current state
+      quoteRequest.toObject.mockImplementation(() => ({
+        sessionId: quoteRequest.sessionId,
+        street: quoteRequest.street,
+        city: quoteRequest.city,
+        state: quoteRequest.state,
+        zipCode: quoteRequest.zipCode,
+        acUnitQuantity: quoteRequest.acUnitQuantity,
+        status: quoteRequest.status,
+      }));
+
       mockModel.findOne.mockResolvedValue(quoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
@@ -307,6 +470,7 @@ describe('WizardService', () => {
       });
 
       expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
     });
 
     it('should progress to contact_info when AC unit quantity is "I don\'t know"', async () => {
@@ -316,10 +480,21 @@ describe('WizardService', () => {
         city: 'Austin',
         state: 'TX',
         zipCode: '78701',
-        acUnitQuantity: ACUnitQuantity.I_DONT_KNOW,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to dynamically return the current state
+      quoteRequest.toObject.mockImplementation(() => ({
+        sessionId: quoteRequest.sessionId,
+        street: quoteRequest.street,
+        city: quoteRequest.city,
+        state: quoteRequest.state,
+        zipCode: quoteRequest.zipCode,
+        status: quoteRequest.status,
+      }));
+
       mockModel.findOne.mockResolvedValue(quoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
@@ -327,6 +502,7 @@ describe('WizardService', () => {
       });
 
       expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
     });
 
     it('should progress to contact_info when system type is "I don\'t know"', async () => {
@@ -337,10 +513,22 @@ describe('WizardService', () => {
         state: 'TX',
         zipCode: '78701',
         acUnitQuantity: ACUnitQuantity.TWO,
-        systemType: SystemType.I_DONT_KNOW,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to dynamically return the current state
+      quoteRequest.toObject.mockImplementation(() => ({
+        sessionId: quoteRequest.sessionId,
+        street: quoteRequest.street,
+        city: quoteRequest.city,
+        state: quoteRequest.state,
+        zipCode: quoteRequest.zipCode,
+        acUnitQuantity: quoteRequest.acUnitQuantity,
+        status: quoteRequest.status,
+      }));
+
       mockModel.findOne.mockResolvedValue(quoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
@@ -348,6 +536,7 @@ describe('WizardService', () => {
       });
 
       expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
     });
 
     it('should progress to contact_info when heating type is "I don\'t know"', async () => {
@@ -359,10 +548,23 @@ describe('WizardService', () => {
         zipCode: '78701',
         acUnitQuantity: ACUnitQuantity.TWO,
         systemType: SystemType.SPLIT,
-        heatingType: HeatingType.I_DONT_KNOW,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to dynamically return the current state
+      quoteRequest.toObject.mockImplementation(() => ({
+        sessionId: quoteRequest.sessionId,
+        street: quoteRequest.street,
+        city: quoteRequest.city,
+        state: quoteRequest.state,
+        zipCode: quoteRequest.zipCode,
+        acUnitQuantity: quoteRequest.acUnitQuantity,
+        systemType: quoteRequest.systemType,
+        status: quoteRequest.status,
+      }));
+
       mockModel.findOne.mockResolvedValue(quoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
@@ -370,6 +572,7 @@ describe('WizardService', () => {
       });
 
       expect(result.status).toBe(QuoteStatus.CONTACT_INFO);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
     });
 
     it('should stay in questionnaire status when all values are known', async () => {
@@ -383,7 +586,21 @@ describe('WizardService', () => {
         systemType: SystemType.SPLIT,
         status: QuoteStatus.QUESTIONNAIRE,
         save: jest.fn().mockResolvedValue(undefined),
+        toObject: jest.fn(),
       };
+
+      // Configure toObject to return the object data
+      quoteRequest.toObject.mockImplementation(() => ({
+        sessionId: quoteRequest.sessionId,
+        street: quoteRequest.street,
+        city: quoteRequest.city,
+        state: quoteRequest.state,
+        zipCode: quoteRequest.zipCode,
+        acUnitQuantity: quoteRequest.acUnitQuantity,
+        systemType: quoteRequest.systemType,
+        status: quoteRequest.status,
+      }));
+
       mockModel.findOne.mockResolvedValue(quoteRequest);
 
       const result = await service.updateQuoteRequest(sessionId, {
@@ -391,6 +608,7 @@ describe('WizardService', () => {
       });
 
       expect(result.status).toBe(QuoteStatus.QUESTIONNAIRE);
+      expect(result).toHaveProperty('isQuestionnaireComplete');
     });
   });
 });

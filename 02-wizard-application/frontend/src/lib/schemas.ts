@@ -3,7 +3,10 @@ import { z } from 'zod';
 export const addressSchema = z.object({
   street: z.string().min(1, 'Street address is required'),
   city: z.string().min(1, 'City is required'),
-  state: z.string().min(2, 'State is required').max(2, 'State must be 2 characters'),
+  state: z
+    .string()
+    .min(2, 'State is required')
+    .max(2, 'State must be 2 characters'),
   zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Invalid ZIP code format'),
 });
 
@@ -29,7 +32,10 @@ export const contactSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   phone: z
     .string()
-    .regex(/^\(?(\d{3})\)?[-. ]?(\d{3})[-. ]?(\d{4})$/, 'Invalid phone number format'),
+    .regex(
+      /^\(?(\d{3})\)?[-. ]?(\d{3})[-. ]?(\d{4})$/,
+      'Invalid phone number format',
+    ),
   email: z.string().email('Invalid email address'),
 });
 

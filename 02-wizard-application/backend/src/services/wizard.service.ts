@@ -55,7 +55,7 @@ export class WizardService {
   async updateQuoteRequest(
     sessionId: string,
     updateData: Partial<QuoteRequestDto>,
-  ): Promise<QuoteRequest> {
+  ): Promise<QuoteRequestDto> {
     this.logger.log(`Updating quote request ${sessionId}`, {
       sessionId,
       updateFields: Object.keys(updateData),
@@ -84,7 +84,25 @@ export class WizardService {
       status: quoteRequest.status,
     });
 
-    return this.enhanceQuoteRequest(quoteRequest);
+    const plainObject = quoteRequest.toObject();
+    const result: QuoteRequestDto = {
+      sessionId: plainObject.sessionId,
+      street: plainObject.street,
+      city: plainObject.city,
+      state: plainObject.state,
+      zipCode: plainObject.zipCode,
+      acUnitQuantity: plainObject.acUnitQuantity,
+      systemType: plainObject.systemType,
+      heatingType: plainObject.heatingType,
+      contactName: plainObject.contactName,
+      contactNumber: plainObject.contactNumber,
+      emailAddress: plainObject.emailAddress,
+      status: plainObject.status,
+      isQuestionnaireComplete: this.isQuestionnaireComplete(quoteRequest),
+      createdAt: plainObject.createdAt,
+      updatedAt: plainObject.updatedAt,
+    };
+    return result;
   }
 
   /**
@@ -94,7 +112,7 @@ export class WizardService {
   async submitQuoteRequest(
     sessionId: string,
     submitData: SubmitQuoteRequest,
-  ): Promise<QuoteRequest> {
+  ): Promise<QuoteRequestDto> {
     this.logger.log(`Submitting quote request: ${sessionId}`);
 
     const quoteRequest = await this.quoteRequestModel.findOne({ sessionId });
@@ -115,18 +133,55 @@ export class WizardService {
     await quoteRequest.save();
 
     this.logger.log(`Successfully submitted quote request: ${sessionId}`);
-    return this.enhanceQuoteRequest(quoteRequest);
+    const plainObject = quoteRequest.toObject();
+    const result: QuoteRequestDto = {
+      sessionId: plainObject.sessionId,
+      street: plainObject.street,
+      city: plainObject.city,
+      state: plainObject.state,
+      zipCode: plainObject.zipCode,
+      acUnitQuantity: plainObject.acUnitQuantity,
+      systemType: plainObject.systemType,
+      heatingType: plainObject.heatingType,
+      contactName: plainObject.contactName,
+      contactNumber: plainObject.contactNumber,
+      emailAddress: plainObject.emailAddress,
+      status: plainObject.status,
+      isQuestionnaireComplete: this.isQuestionnaireComplete(quoteRequest),
+      createdAt: plainObject.createdAt,
+      updatedAt: plainObject.updatedAt,
+    };
+    return result;
   }
 
   /**
    * Get quote request by session ID
    */
-  async getQuoteRequest(sessionId: string): Promise<QuoteRequest> {
+  async getQuoteRequest(sessionId: string): Promise<QuoteRequestDto> {
     const quoteRequest = await this.quoteRequestModel.findOne({ sessionId });
     if (!quoteRequest) {
       throw new NotFoundException(`Quote request not found: ${sessionId}`);
     }
-    return this.enhanceQuoteRequest(quoteRequest);
+
+    const plainObject = quoteRequest.toObject();
+    const result: QuoteRequestDto = {
+      sessionId: plainObject.sessionId,
+      street: plainObject.street,
+      city: plainObject.city,
+      state: plainObject.state,
+      zipCode: plainObject.zipCode,
+      acUnitQuantity: plainObject.acUnitQuantity,
+      systemType: plainObject.systemType,
+      heatingType: plainObject.heatingType,
+      contactName: plainObject.contactName,
+      contactNumber: plainObject.contactNumber,
+      emailAddress: plainObject.emailAddress,
+      status: plainObject.status,
+      isQuestionnaireComplete: this.isQuestionnaireComplete(quoteRequest),
+      createdAt: plainObject.createdAt,
+      updatedAt: plainObject.updatedAt,
+    };
+    return result;
   }
 
   /**
@@ -226,15 +281,5 @@ export class WizardService {
     return (
       hasSpecificACUnits && hasSpecificSystemType && hasSpecificHeatingType
     );
-  }
-
-  /**
-   * Enhance quote request with computed fields
-   */
-  private enhanceQuoteRequest(quoteRequest: QuoteRequest): any {
-    return {
-      ...quoteRequest.toObject(),
-      isQuestionnaireComplete: this.isQuestionnaireComplete(quoteRequest),
-    };
   }
 }
