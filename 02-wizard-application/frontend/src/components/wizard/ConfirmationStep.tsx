@@ -9,6 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+
+// Format phone number for display: 5551234567 -> (555) 123-4567
+const formatPhoneForDisplay = (phone: string): string => {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  return phone; // Return as-is if not 10 digits
+};
 import { CheckCircle } from 'lucide-react';
 
 export function ConfirmationStep() {
@@ -122,7 +131,7 @@ export function ConfirmationStep() {
                 {sessionData.data.contact.firstName}{' '}
                 {sessionData.data.contact.lastName}
                 <br />
-                {sessionData.data.contact.phone}
+                {formatPhoneForDisplay(sessionData.data.contact.phone)}
                 <br />
                 {sessionData.data.contact.email}
               </p>
@@ -133,10 +142,9 @@ export function ConfirmationStep() {
         <div className='bg-blue-50 p-4 rounded-lg border border-blue-200'>
           <h4 className='font-medium text-blue-800 mb-2'>What&apos;s Next?</h4>
           <p className='text-blue-700 text-sm'>
-            {isComplete 
-              ? "One of our HVAC specialists will review your request and contact you within 24 hours to schedule a consultation and provide your personalized quote."
-              : "One of our HVAC specialists will contact you within 24 hours to gather additional details about your system and provide your personalized quote."
-            }
+            {isComplete
+              ? 'One of our HVAC specialists will review your request and contact you within 24 hours to schedule a consultation and provide your personalized quote.'
+              : 'One of our HVAC specialists will contact you within 24 hours to gather additional details about your system and provide your personalized quote.'}
           </p>
         </div>
 

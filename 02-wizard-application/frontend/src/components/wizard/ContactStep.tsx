@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PhoneInput, getPhoneDigits } from '@/components/ui/phone-input';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -23,7 +24,8 @@ import {
 } from '@/components/ui/card';
 
 export function ContactStep() {
-  const { sessionData, submitContactInfo, goToPrevStep, quoteRequest } = useWizardApi();
+  const { sessionData, submitContactInfo, goToPrevStep, quoteRequest } =
+    useWizardApi();
 
   // Use backend's completion status instead of calculating locally
   const isComplete = quoteRequest?.isQuestionnaireComplete ?? false;
@@ -45,10 +47,12 @@ export function ContactStep() {
 
   const onSubmit = async (data: ContactFormData) => {
     try {
-      // Dead simple: just send the form data as-is
+      // Ensure we send raw digits to the backend
+      const phoneDigits = getPhoneDigits(data.phone);
+
       await submitContactInfo({
         name: data.name,
-        phone: data.phone,
+        phone: phoneDigits,
         email: data.email,
       });
     } catch (error) {
@@ -61,10 +65,9 @@ export function ContactStep() {
       <CardHeader>
         <CardTitle>Contact Information</CardTitle>
         <CardDescription>
-          {isComplete 
-            ? "Please provide your contact information to complete your quote request."
-            : "Please provide your contact information and we'll contact you to gather additional details for your quote."
-          }
+          {isComplete
+            ? 'Please provide your contact information to complete your quote request.'
+            : "Please provide your contact information and we'll contact you to gather additional details for your quote."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,7 +94,7 @@ export function ContactStep() {
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder='(555) 123-4567' {...field} />
+                    <PhoneInput value={field.value} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
