@@ -275,11 +275,14 @@ class WizardApiService {
   }
 
   // Submit contact step (step 5) - uses POST to submit final quote
-  async submitContactStep(sessionId: string, contactData: {
-    name: string;
-    phone: string;
-    email: string;
-  }): Promise<{ success: boolean; status: string; quoteRequest: QuoteRequest }> {
+  async submitContactStep(
+    sessionId: string,
+    contactData: {
+      name: string;
+      phone: string;
+      email: string;
+    },
+  ): Promise<{ success: boolean; status: string; quoteRequest: QuoteRequest }> {
     const submitData: SubmitQuoteRequestNew = {
       contactName: contactData.name,
       contactNumber: contactData.phone.replace(/\D/g, ''), // Remove non-digits
@@ -287,11 +290,11 @@ class WizardApiService {
     };
 
     const quoteRequest = await this.submitQuoteRequest(sessionId, submitData);
-    
+
     return {
       success: true,
       status: 'submitted',
-      quoteRequest
+      quoteRequest,
     };
   }
 
