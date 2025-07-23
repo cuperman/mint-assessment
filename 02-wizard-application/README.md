@@ -159,3 +159,18 @@ stateDiagram-v2
 * When a new Quote Request is created, it starts in Questionnaire state
 * When all questions are answered, the state is progressed to ContactInfo
 * Depending on some of the answers, backend may decide to progress to ContactInfo early
+
+### Docker Support
+
+Launch with docker to simulate a realistic environment or to minimize development environment dependencies
+
+1. Start the services with `docker compose`:
+```bash
+docker compose up --build -d
+```
+
+1. Access the services at the following URLs
+
+* Frontend: http://localhost:3000
+* Backend API: http://localhost:3001
+* MongoDB: mongodb://localhost:27017/wizard_app
