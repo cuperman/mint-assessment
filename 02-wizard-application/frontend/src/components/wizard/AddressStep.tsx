@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addressSchema, AddressFormData } from '@/lib/schemas';
 import { useWizardApi } from '@/context/WizardApiContext';
+import { useWizard } from '@/context/WizardContext';
 import {
   Form,
   FormControl,
@@ -24,26 +26,46 @@ import {
 
 export function AddressStep() {
   const { sessionData, submitStepAndGetNext, isLoading } = useWizardApi();
+  const { state, updateAddress } = useWizard();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
-    defaultValues: sessionData?.data.address
-      ? {
-          street: sessionData.data.address.address,
-          city: sessionData.data.address.city,
-          state: sessionData.data.address.state,
-          zip: sessionData.data.address.zipCode,
-        }
-      : {
-          street: '',
-          city: '',
-          state: '',
-          zip: '',
-        },
+    defaultValues: {
+      street: state.address?.street || '',
+      city: state.address?.city || '',
+      state: state.address?.state || '',
+      zip: state.address?.zip || '',
+    },
   });
+
+  // Watch all form values for real-time updates
+  const watchedValues = form.watch();
+
+  // Save to wizard context whenever form values change
+  useEffect(() => {
+    const values = form.getValues();
+    // Only update if values have actually changed to avoid infinite loops
+    if (JSON.stringify(values) !== JSON.stringify(state.address)) {
+      updateAddress(values);
+    }
+  }, [watchedValues, form, state.address, updateAddress]);
+
+  // Update form when centralized state changes (e.g., when navigating back)
+  useEffect(() => {
+    if (state.address) {
+      form.reset({
+        street: state.address.street,
+        city: state.address.city,
+        state: state.address.state,
+        zip: state.address.zip,
+      });
+    }
+  }, [state.address, form]);
 
   const onSubmit = async (data: AddressFormData) => {
     try {
+      setIsSubmitting(true);
       const addressData = {
         address: data.street,
         city: data.city,
@@ -53,6 +75,8 @@ export function AddressStep() {
       await submitStepAndGetNext(addressData);
     } catch (error) {
       console.error('Failed to submit address:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -126,8 +150,12 @@ export function AddressStep() {
               />
             </div>
 
-            <Button type='submit' className='w-full' disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Continue Questionnaire'}
+            <Button
+              type='submit'
+              className='w-full'
+              disabled={isLoading || isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Continue Questionnaire'}
             </Button>
           </form>
         </Form>

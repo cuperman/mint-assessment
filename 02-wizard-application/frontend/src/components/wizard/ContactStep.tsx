@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { contactSchema, ContactFormData } from '@/lib/schemas';
 import { useWizardApi } from '@/context/WizardApiContext';
+import { useWizard } from '@/context/WizardContext';
 import {
   Form,
   FormControl,
@@ -24,29 +26,49 @@ import {
 } from '@/components/ui/card';
 
 export function ContactStep() {
-  const { sessionData, submitContactInfo, goToPrevStep, quoteRequest } =
+  const { submitContactInfo, goToPrevStep, quoteRequest, isLoading } =
     useWizardApi();
+  const { state, updateContact } = useWizard();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Use backend's completion status instead of calculating locally
   const isComplete = quoteRequest?.isQuestionnaireComplete ?? false;
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
-    defaultValues: sessionData?.data.contact
-      ? {
-          name: `${sessionData.data.contact.firstName} ${sessionData.data.contact.lastName}`,
-          phone: sessionData.data.contact.phone,
-          email: sessionData.data.contact.email,
-        }
-      : {
-          name: '',
-          phone: '',
-          email: '',
-        },
+    defaultValues: {
+      name: state.contact?.name || '',
+      phone: state.contact?.phone || '',
+      email: state.contact?.email || '',
+    },
   });
+
+  // Watch all form values for real-time updates
+  const watchedValues = form.watch();
+
+  // Save to wizard context whenever form values change
+  useEffect(() => {
+    const values = form.getValues();
+    // Only update if values have actually changed to avoid infinite loops
+    if (JSON.stringify(values) !== JSON.stringify(state.contact)) {
+      updateContact(values);
+    }
+  }, [watchedValues, form, state.contact, updateContact]);
+
+  // Update form when centralized state changes (e.g., when navigating back)
+  useEffect(() => {
+    if (state.contact) {
+      form.reset({
+        name: state.contact.name,
+        phone: state.contact.phone,
+        email: state.contact.email,
+      });
+    }
+  }, [state.contact, form]);
 
   const onSubmit = async (data: ContactFormData) => {
     try {
+      setIsSubmitting(true);
       // Ensure we send raw digits to the backend
       const phoneDigits = getPhoneDigits(data.phone);
 
@@ -57,6 +79,8 @@ export function ContactStep() {
       });
     } catch (error) {
       console.error('Failed to submit contact info:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -125,11 +149,16 @@ export function ContactStep() {
                 variant='outline'
                 onClick={goToPrevStep}
                 className='flex-1'
+                disabled={isLoading || isSubmitting}
               >
                 Back
               </Button>
-              <Button type='submit' className='flex-1'>
-                Submit Request
+              <Button
+                type='submit'
+                className='flex-1'
+                disabled={isLoading || isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Request'}
               </Button>
             </div>
           </form>

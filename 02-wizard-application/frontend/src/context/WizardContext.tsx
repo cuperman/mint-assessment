@@ -16,6 +16,11 @@ type WizardAction =
   | { type: 'SET_SYSTEM_TYPE'; payload: SystemTypeData }
   | { type: 'SET_HEATING_TYPE'; payload: HeatingTypeData }
   | { type: 'SET_CONTACT'; payload: ContactData }
+  | { type: 'UPDATE_ADDRESS'; payload: Partial<AddressData> }
+  | { type: 'UPDATE_AC_UNITS'; payload: Partial<ACUnitsData> }
+  | { type: 'UPDATE_SYSTEM_TYPE'; payload: Partial<SystemTypeData> }
+  | { type: 'UPDATE_HEATING_TYPE'; payload: Partial<HeatingTypeData> }
+  | { type: 'UPDATE_CONTACT'; payload: Partial<ContactData> }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
   | { type: 'SET_STEP'; payload: number }
@@ -34,6 +39,11 @@ interface WizardContextType {
   setSystemType: (data: SystemTypeData) => void;
   setHeatingType: (data: HeatingTypeData) => void;
   setContact: (data: ContactData) => void;
+  updateAddress: (data: Partial<AddressData>) => void;
+  updateACUnits: (data: Partial<ACUnitsData>) => void;
+  updateSystemType: (data: Partial<SystemTypeData>) => void;
+  updateHeatingType: (data: Partial<HeatingTypeData>) => void;
+  updateContact: (data: Partial<ContactData>) => void;
   setNeedsContact: (needs: boolean) => void;
   reset: () => void;
   getNextStep: () => number;
@@ -89,6 +99,14 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
         ...state,
         address: action.payload,
       };
+    case 'UPDATE_ADDRESS':
+      return {
+        ...state,
+        address: {
+          ...state.address,
+          ...action.payload,
+        } as AddressData,
+      };
     case 'SET_AC_UNITS':
       return {
         ...state,
@@ -97,11 +115,27 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
           action.payload.units === 'more_than_three' ||
           action.payload.units === 'i_dont_know',
       };
+    case 'UPDATE_AC_UNITS':
+      return {
+        ...state,
+        acUnits: {
+          ...state.acUnits,
+          ...action.payload,
+        } as ACUnitsData,
+      };
     case 'SET_SYSTEM_TYPE':
       return {
         ...state,
         systemType: action.payload,
         needsContact: action.payload.type === 'i_dont_know',
+      };
+    case 'UPDATE_SYSTEM_TYPE':
+      return {
+        ...state,
+        systemType: {
+          ...state.systemType,
+          ...action.payload,
+        } as SystemTypeData,
       };
     case 'SET_HEATING_TYPE':
       return {
@@ -109,10 +143,26 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
         heatingType: action.payload,
         needsContact: action.payload.type === 'i_dont_know',
       };
+    case 'UPDATE_HEATING_TYPE':
+      return {
+        ...state,
+        heatingType: {
+          ...state.heatingType,
+          ...action.payload,
+        } as HeatingTypeData,
+      };
     case 'SET_CONTACT':
       return {
         ...state,
         contact: action.payload,
+      };
+    case 'UPDATE_CONTACT':
+      return {
+        ...state,
+        contact: {
+          ...state.contact,
+          ...action.payload,
+        } as ContactData,
       };
     case 'NEXT_STEP':
       return {
@@ -167,6 +217,16 @@ export function WizardProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_HEATING_TYPE', payload: data });
   const setContact = (data: ContactData) =>
     dispatch({ type: 'SET_CONTACT', payload: data });
+  const updateAddress = (data: Partial<AddressData>) =>
+    dispatch({ type: 'UPDATE_ADDRESS', payload: data });
+  const updateACUnits = (data: Partial<ACUnitsData>) =>
+    dispatch({ type: 'UPDATE_AC_UNITS', payload: data });
+  const updateSystemType = (data: Partial<SystemTypeData>) =>
+    dispatch({ type: 'UPDATE_SYSTEM_TYPE', payload: data });
+  const updateHeatingType = (data: Partial<HeatingTypeData>) =>
+    dispatch({ type: 'UPDATE_HEATING_TYPE', payload: data });
+  const updateContact = (data: Partial<ContactData>) =>
+    dispatch({ type: 'UPDATE_CONTACT', payload: data });
   const setNeedsContact = (needs: boolean) =>
     dispatch({ type: 'SET_NEEDS_CONTACT', payload: needs });
   const reset = () => dispatch({ type: 'RESET' });
@@ -182,6 +242,11 @@ export function WizardProvider({ children }: { children: ReactNode }) {
     setSystemType,
     setHeatingType,
     setContact,
+    updateAddress,
+    updateACUnits,
+    updateSystemType,
+    updateHeatingType,
+    updateContact,
     setNeedsContact,
     reset,
     getNextStep,

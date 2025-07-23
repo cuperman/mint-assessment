@@ -1,6 +1,7 @@
 'use client';
 
 import { useWizardApi } from '@/context/WizardApiContext';
+import { useWizard } from '@/context/WizardContext';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,8 +23,11 @@ import { CheckCircle } from 'lucide-react';
 
 export function ConfirmationStep() {
   const { sessionData, reset, quoteRequest } = useWizardApi();
+  const { reset: resetWizardState } = useWizard();
 
   const handleStartOver = async () => {
+    // Reset both the API state and the wizard form state
+    resetWizardState();
     await reset();
   };
 

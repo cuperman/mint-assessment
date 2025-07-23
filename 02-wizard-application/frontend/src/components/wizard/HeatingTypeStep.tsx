@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { heatingTypeSchema, HeatingTypeFormData } from '@/lib/schemas';
 import { useWizardApi } from '@/context/WizardApiContext';
+import { useWizard } from '@/context/WizardContext';
 import {
   Form,
   FormControl,
@@ -29,22 +31,41 @@ const HEATING_TYPE_OPTIONS = [
 ] as const;
 
 export function HeatingTypeStep() {
-  const { sessionData, submitStepAndGetNext, goToPrevStep } = useWizardApi();
+  const { submitStepAndGetNext, goToPrevStep, isLoading } = useWizardApi();
+  const { state, updateHeatingType } = useWizard();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<HeatingTypeFormData>({
     resolver: zodResolver(heatingTypeSchema),
-    defaultValues: sessionData?.data.heatingType
-      ? {
-          type: sessionData.data.heatingType
-            .heatingType as HeatingTypeFormData['type'],
-        }
-      : {
-          type: undefined,
-        },
+    defaultValues: {
+      type: state.heatingType?.type,
+    },
   });
+
+  // Watch all form values for real-time updates
+  const watchedValues = form.watch();
+
+  // Save to wizard context whenever form values change
+  useEffect(() => {
+    const values = form.getValues();
+    // Only update if values have actually changed to avoid infinite loops
+    if (JSON.stringify(values) !== JSON.stringify(state.heatingType)) {
+      updateHeatingType(values);
+    }
+  }, [watchedValues, form, state.heatingType, updateHeatingType]);
+
+  // Update form when centralized state changes (e.g., when navigating back)
+  useEffect(() => {
+    if (state.heatingType) {
+      form.reset({
+        type: state.heatingType.type,
+      });
+    }
+  }, [state.heatingType, form]);
 
   const onSubmit = async (data: HeatingTypeFormData) => {
     try {
+      setIsSubmitting(true);
       const heatingTypeData = {
         heatingType: data.type,
         hasExistingDucts: 'yes', // Default value, could be made dynamic
@@ -53,6 +74,8 @@ export function HeatingTypeStep() {
       await submitStepAndGetNext(heatingTypeData);
     } catch (error) {
       console.error('Failed to submit heating type:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,11 +132,16 @@ export function HeatingTypeStep() {
                 variant='outline'
                 onClick={goToPrevStep}
                 className='flex-1'
+                disabled={isLoading || isSubmitting}
               >
                 Back
               </Button>
-              <Button type='submit' className='flex-1'>
-                Continue
+              <Button
+                type='submit'
+                className='flex-1'
+                disabled={isLoading || isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Continue'}
               </Button>
             </div>
           </form>
