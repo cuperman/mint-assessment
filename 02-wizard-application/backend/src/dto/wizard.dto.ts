@@ -121,3 +121,56 @@ export class SubmitQuoteRequest {
   @IsEmail({}, { message: 'Please provide a valid email address' })
   emailAddress: string;
 }
+
+export class UpdateQuoteRequest {
+  @IsOptional()
+  @IsString()
+  street?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{5}$/, { message: 'Zip code must be exactly 5 digits' })
+  zipCode?: string;
+
+  @IsOptional()
+  @IsEnum(ACUnitQuantity)
+  acUnitQuantity?: ACUnitQuantity;
+
+  @IsOptional()
+  @IsEnum(SystemType)
+  systemType?: SystemType;
+
+  @IsOptional()
+  @IsEnum(HeatingType)
+  heatingType?: HeatingType;
+
+  @IsOptional()
+  @IsString()
+  contactName?: string;
+
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => {
+    // Strip all non-digit characters from phone number
+    return typeof value === 'string' ? value.replace(/\D/g, '') : '';
+  })
+  @Matches(/^\d{10}$/, { message: 'Contact number must be exactly 10 digits' })
+  contactNumber?: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  emailAddress?: string;
+
+  @IsOptional()
+  @IsEnum(QuoteStatus)
+  status?: QuoteStatus;
+}

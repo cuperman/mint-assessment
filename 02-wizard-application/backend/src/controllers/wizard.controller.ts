@@ -5,7 +5,6 @@ import {
   Param,
   Post,
   Patch,
-  ValidationPipe,
   Logger,
   HttpCode,
   HttpStatus,
@@ -13,6 +12,7 @@ import {
 import { WizardService } from '../services/wizard.service';
 import {
   QuoteRequest as QuoteRequestDto,
+  UpdateQuoteRequest,
   SubmitQuoteRequest,
 } from '../dto/wizard.dto';
 
@@ -78,7 +78,7 @@ export class WizardController {
   @Patch('quote_request/:sessionId')
   async updateQuoteRequest(
     @Param('sessionId') sessionId: string,
-    @Body(ValidationPipe) updateData: Partial<QuoteRequestDto>,
+    @Body() updateData: UpdateQuoteRequest,
   ): Promise<QuoteRequestDto> {
     this.logger.log(`Updating quote request: ${sessionId}`, {
       sessionId,
@@ -104,7 +104,7 @@ export class WizardController {
   @Post('quote_request/:sessionId')
   async submitQuoteRequest(
     @Param('sessionId') sessionId: string,
-    @Body(ValidationPipe) submitData: SubmitQuoteRequest,
+    @Body() submitData: SubmitQuoteRequest,
   ): Promise<QuoteRequestDto> {
     this.logger.log(`Submitting quote request: ${sessionId}`);
 
