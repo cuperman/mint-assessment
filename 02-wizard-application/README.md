@@ -1,5 +1,133 @@
 # Exercise 02 - Multi-Step Wizard Application
 
+Below are details about the second exercise
+
+## Getting Started
+
+### Backend
+
+Use npm scripts to build, lint, test, and run the dev server
+
+```bash
+cd backend
+
+# (optional) use a consistent version of node
+nvm use
+
+# install dependencies
+npm install
+
+# build, lint, test
+npm run build
+npm run lint
+npm test
+
+# start the dev server (localhost:3001)
+npm run start:dev
+```
+
+### Frontend
+
+Use npm scripts to build, lint, test, and run the dev server
+
+```bash
+cd frontend
+
+# (optional) use a consistent version of node
+nvm use
+
+# install dependencies
+npm install
+
+# build, lint, test
+npm run build
+npm run lint
+npm test
+
+# start the dev server (localhost:3000)
+npm run dev
+```
+
+## Design
+
+### Sequence diagram
+
+```mermaid
+sequenceDiagram
+   participant Frontend
+   participant Backend
+   Frontend->>Backend: Create Quote Request (POST)
+   Backend->>Frontend: Session ID (201)
+   Frontend->>Backend: Questionnaire answers (PATCH)
+   Backend->>Frontend: Validation error or success (400 | 200)
+   Frontend->>Backend: Submit with contact info (POST)
+   Backend->>Frontend: Success (200)
+```
+
+1. The frontend starts the process by issuing a POST request on the Quote Request resource.  The server responds with a Session ID to use in subsequent requests.
+
+```
+# example:
+POST /api/quote_request
+=> { "sessionId": "550e8400-e29b-41d4-a716-446655440000" }
+```
+
+2. The frontend issues multiple PATCH requests on the Quote Request session with a set of ke/values to be validated and saved in the database.  The backend either returns validation errors or saves the record and returns the latest copy.  It may progress the state if necessary in the returned object.
+
+```
+# example:
+PATCH /api/quote_request/550e8400-e29b-41d4-a716-446655440000
+```
+
+3. To complete the process, the frontend sends a POST to the Quote Request session.
+
+```
+# example
+POST /api/quote_request/550e8400-e29b-41d4-a716-446655440000
+```
+
+### State diagram
+
+```mermaid
+stateDiagram-v2
+   [*] --> Questionnaire
+   Questionnaire --> ContactInfo
+   ContactInfo --> Submitted
+   Submitted --> [*]
+```
+
+* The backend maintains the state of the object
+* When a new Quote Request is created, it starts in Questionnaire state
+* When all questions are answered, the state is progressed to ContactInfo
+* Depending on some of the answers, backend may decide to progress to ContactInfo early
+
+## Docker Support
+
+Launch with docker to simulate a realistic environment or to minimize development environment dependencies
+
+1. Start the services with `docker compose`:
+```bash
+docker compose up --build
+```
+
+1. Access the services at the following URLs
+
+* Frontend: http://localhost:3000
+* Backend API: http://localhost:3001
+* MongoDB: mongodb://localhost:27017/wizard_app
+
+## Next steps
+
+Other things I'd like to do given more time
+
+- [ ] Persist state in local storage so that sessions can be resumed when refreshing browser or returning later
+- [ ] Use mono repo pattern to better manage multiple projects within a single repo (ex: Lerna)
+- [ ] Publish npm packages and docker image to Github Packages
+- [ ] Define AWS infrastructure with Infrastructure as Code (ex: CDK or Terraform)
+- [ ] Continuous Delivery: auto deploy changes to AWS
+
+## Original Scope
+
 ## Overview
 
 In this challenge, you will create a simple and lightweight full-stack application that simulates a multi-step quote request wizard for HVAC installations. This is a simplified version of a real-world scenario where our customers request a quote online for our services. You can see our current implementation in our website www.minthome.com (At the moment we are only servicing Texas, Nevada and Arizona).
@@ -106,71 +234,3 @@ You can either share the repository URL or provide a ZIP file with your solution
 - Consider using form libraries like ShadCN (https://ui.shadcn.com/)
 - Document your code and provide clear instructions for running your application
 - You are free to use AI tools / AI Agents to assist on your solution
-
-## Design
-
-### Sequence diagram
-
-```mermaid
-sequenceDiagram
-   participant Frontend
-   participant Backend
-   Frontend->>Backend: Create Quote Request (POST)
-   Backend->>Frontend: Session ID (201)
-   Frontend->>Backend: Questionnaire answers (PATCH)
-   Backend->>Frontend: Validation error or success (400 | 200)
-   Frontend->>Backend: Submit with contact info (POST)
-   Backend->>Frontend: Success (200)
-```
-
-1. The frontend starts the process by issuing a POST request on the Quote Request resource.  The server responds with a Session ID to use in subsequent requests.
-
-```
-# example:
-POST /api/quote_request
-=> { "sessionId": "550e8400-e29b-41d4-a716-446655440000" }
-```
-
-2. The frontend issues multiple PATCH requests on the Quote Request session with a set of ke/values to be validated and saved in the database.  The backend either returns validation errors or saves the record and returns the latest copy.  It may progress the state if necessary in the returned object.
-
-```
-# example:
-PATCH /api/quote_request/550e8400-e29b-41d4-a716-446655440000
-```
-
-3. To complete the process, the frontend sends a POST to the Quote Request session.
-
-```
-# example
-POST /api/quote_request/550e8400-e29b-41d4-a716-446655440000
-```
-
-### State diagram
-
-```mermaid
-stateDiagram-v2
-   [*] --> Questionnaire
-   Questionnaire --> ContactInfo
-   ContactInfo --> Submitted
-   Submitted --> [*]
-```
-
-* The backend maintains the state of the object
-* When a new Quote Request is created, it starts in Questionnaire state
-* When all questions are answered, the state is progressed to ContactInfo
-* Depending on some of the answers, backend may decide to progress to ContactInfo early
-
-### Docker Support
-
-Launch with docker to simulate a realistic environment or to minimize development environment dependencies
-
-1. Start the services with `docker compose`:
-```bash
-docker compose up --build -d
-```
-
-1. Access the services at the following URLs
-
-* Frontend: http://localhost:3000
-* Backend API: http://localhost:3001
-* MongoDB: mongodb://localhost:27017/wizard_app

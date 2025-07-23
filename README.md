@@ -1,5 +1,20 @@
 # Mint Home - Take Home Challenge
 
+This repository contains my submission for the take home challenge.  Each excercise is documented in the respective README:
+
+1. Concurrent Fibonacci (see [01-concurrent-fibonacci/README.md](./01-concurrent-fibonacci/README.md))
+1. Wizard Application (see [02-wizard-application/README.md](./02-wizard-application/README.md))
+
+Each project includes:
+
+* Code that sovles the problem
+* Unit tests
+* Documentation
+* Github Actions workflows (see [.github/workflows](./.github/workflows))
+* Docker examples included in the Wizard Application
+
+## Original Scope
+
 Welcome to the Mint Home take home challenge! This repo contains two coding challenges that will help us evaluate your technical skills and problem-solving approach.
 
 ## Overview
@@ -42,18 +57,3 @@ Create a simple full-stack application that simulates a multi-step quote request
 2. Include clear documentation on how to run the solutions to both challenges.
 
 Good luck! We look forward to reviewing your solutions.
-
-## Notes
-
-Useful commands:
-
-```bash
-# use a consistent version of node
-nvm use
-
-# install dependencies
-npm install
-
-# run tests automatically as files change
-npm test -- --watch
-```
