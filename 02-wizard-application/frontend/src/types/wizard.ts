@@ -6,7 +6,7 @@ export interface AddressData {
 }
 
 export interface ACUnitsData {
-  units: '1' | '2' | 'more-than-3' | 'i_dont_know';
+  units: '1' | '2' | 'more_than_three' | 'i_dont_know';
 }
 
 export interface SystemTypeData {
@@ -14,7 +14,7 @@ export interface SystemTypeData {
 }
 
 export interface HeatingTypeData {
-  type: 'heat-pump' | 'gas' | 'i_dont_know';
+  type: 'heat_pump' | 'gas' | 'i_dont_know';
 }
 
 export interface ContactData {

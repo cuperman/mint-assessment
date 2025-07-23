@@ -57,7 +57,7 @@ function getNextStepNumber(state: WizardData): number {
       return 2;
     case 2: // AC Units
       if (
-        state.acUnits?.units === 'more-than-3' ||
+        state.acUnits?.units === 'more_than_three' ||
         state.acUnits?.units === 'i_dont_know'
       ) {
         return 5; // Go to contact page
@@ -94,7 +94,7 @@ function wizardReducer(state: WizardData, action: WizardAction): WizardData {
         ...state,
         acUnits: action.payload,
         needsContact:
-          action.payload.units === 'more-than-3' ||
+          action.payload.units === 'more_than_three' ||
           action.payload.units === 'i_dont_know',
       };
     case 'SET_SYSTEM_TYPE':

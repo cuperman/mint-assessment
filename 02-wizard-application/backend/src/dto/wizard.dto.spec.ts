@@ -168,7 +168,6 @@ describe('QuoteRequest DTO', () => {
       const validValues = [
         ACUnitQuantity.ONE,
         ACUnitQuantity.TWO,
-        ACUnitQuantity.THREE,
         ACUnitQuantity.MORE_THAN_THREE,
         ACUnitQuantity.I_DONT_KNOW,
       ];
@@ -209,8 +208,6 @@ describe('QuoteRequest DTO', () => {
       const validValues = [
         SystemType.SPLIT,
         SystemType.PACKAGE,
-        SystemType.DUCTLESS,
-        SystemType.HEAT_PUMP,
         SystemType.I_DONT_KNOW,
       ];
 
@@ -237,12 +234,8 @@ describe('QuoteRequest DTO', () => {
   describe('Heating Type Enum Validation', () => {
     it('should accept all valid HeatingType enum values', async () => {
       const validValues = [
-        HeatingType.GAS,
-        HeatingType.ELECTRIC,
-        HeatingType.OIL,
         HeatingType.HEAT_PUMP,
-        HeatingType.GEOTHERMAL,
-        HeatingType.SOLAR,
+        HeatingType.GAS,
         HeatingType.I_DONT_KNOW,
       ];
 
