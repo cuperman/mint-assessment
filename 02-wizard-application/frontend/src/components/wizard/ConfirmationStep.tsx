@@ -47,7 +47,7 @@ export function ConfirmationStep() {
   const formatHeatingType = (type?: string) => {
     if (!type) return 'Not specified';
     switch (type) {
-      case 'heat-pump':
+      case 'heat_pump':
         return 'Heat pump';
       case 'gas':
         return 'Gas';

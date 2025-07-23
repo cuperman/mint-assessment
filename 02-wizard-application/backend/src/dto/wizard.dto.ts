@@ -13,7 +13,6 @@ import {
 export enum ACUnitQuantity {
   ONE = '1',
   TWO = '2',
-  THREE = '3',
   MORE_THAN_THREE = 'more_than_three',
   I_DONT_KNOW = 'i_dont_know',
 }
@@ -21,18 +20,12 @@ export enum ACUnitQuantity {
 export enum SystemType {
   SPLIT = 'split',
   PACKAGE = 'package',
-  DUCTLESS = 'ductless',
-  HEAT_PUMP = 'heat_pump',
   I_DONT_KNOW = 'i_dont_know',
 }
 
 export enum HeatingType {
-  GAS = 'gas',
-  ELECTRIC = 'electric',
-  OIL = 'oil',
   HEAT_PUMP = 'heat_pump',
-  GEOTHERMAL = 'geothermal',
-  SOLAR = 'solar',
+  GAS = 'gas',
   I_DONT_KNOW = 'i_dont_know',
 }
 

@@ -40,7 +40,7 @@ export function SummaryStep() {
             <p className='text-sm text-muted-foreground'>
               {state.acUnits.units === '1' && '1 AC Unit'}
               {state.acUnits.units === '2' && '2 AC Units'}
-              {state.acUnits.units === 'more-than-3' && 'More than 3 AC Units'}
+              {state.acUnits.units === 'more_than_three' && 'More than 3 AC Units'}
               {state.acUnits.units === 'i_dont_know' && "I don't know"}
             </p>
           </div>

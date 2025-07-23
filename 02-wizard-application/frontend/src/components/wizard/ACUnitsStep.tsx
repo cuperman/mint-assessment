@@ -25,7 +25,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 const AC_UNIT_OPTIONS = [
   { value: '1', label: '1 AC Unit' },
   { value: '2', label: '2 AC Units' },
-  { value: 'more-than-3', label: 'More than 3' },
+  { value: 'more_than_three', label: 'More than 3' },
   { value: 'i_dont_know', label: "I don't know" },
 ] as const;
 
@@ -40,7 +40,7 @@ export function ACUnitsStep() {
     if (units === undefined) return undefined;
     if (units === 1) return '1';
     if (units === 2) return '2';
-    if (units > 3) return 'more-than-3';
+    if (units > 2) return 'more_than_three';
     if (units === 0) return 'i_dont_know'; // Handle "I don't know" case
     return undefined;
   };
@@ -58,7 +58,7 @@ export function ACUnitsStep() {
 
       if (data.units === '1') units = 1;
       else if (data.units === '2') units = 2;
-      else if (data.units === 'more-than-3')
+      else if (data.units === 'more_than_three')
         units = 4; // Use 4 to represent "more than 3"
       else if (data.units === 'i_dont_know') units = 0; // "I don't know" case
       else units = 0; // Default fallback

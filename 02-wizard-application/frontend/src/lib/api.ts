@@ -184,9 +184,7 @@ class WizardApiService {
             acUnitQuantity = ACUnitQuantity.ONE;
           } else if (units === 2 || units === '2') {
             acUnitQuantity = ACUnitQuantity.TWO;
-          } else if (units === 3 || units === '3') {
-            acUnitQuantity = ACUnitQuantity.THREE;
-          } else if (units === 4 || units === 'more-than-3') {
+          } else if (units === 4 || units === 'more_than_three') {
             acUnitQuantity = ACUnitQuantity.MORE_THAN_THREE;
           } else if (units === 0 || units === 'i_dont_know') {
             acUnitQuantity = ACUnitQuantity.I_DONT_KNOW;
@@ -234,7 +232,7 @@ class WizardApiService {
 
           let heatingType: HeatingType;
           switch (typeValue) {
-            case 'heat-pump':
+            case 'heat_pump':
               heatingType = HeatingType.HEAT_PUMP;
               break;
             case 'gas':

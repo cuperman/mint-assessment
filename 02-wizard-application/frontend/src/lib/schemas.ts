@@ -11,7 +11,7 @@ export const addressSchema = z.object({
 });
 
 export const acUnitsSchema = z.object({
-  units: z.enum(['1', '2', 'more-than-3', 'i_dont_know'], {
+  units: z.enum(['1', '2', 'more_than_three', 'i_dont_know'], {
     message: 'Please select the number of AC units',
   }),
 });
@@ -23,7 +23,7 @@ export const systemTypeSchema = z.object({
 });
 
 export const heatingTypeSchema = z.object({
-  type: z.enum(['heat-pump', 'gas', 'i_dont_know'], {
+  type: z.enum(['heat_pump', 'gas', 'i_dont_know'], {
     message: 'Please select the heating type',
   }),
 });
