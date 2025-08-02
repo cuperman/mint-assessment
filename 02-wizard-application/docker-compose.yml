@@ -21,7 +21,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: wizard-backend
+      labels:
+        - 'org.opencontainers.image.source=https://github.com/cuperman/mint-assessment'
+    image: mint-backend
+    container_name: mint-backend
     restart: unless-stopped
     environment:
       - NODE_ENV=docker
@@ -42,7 +45,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: wizard-frontend
+      labels:
+        - 'org.opencontainers.image.source=https://github.com/cuperman/mint-assessment'
+    image: mint-frontend
+    container_name: mint-frontend
     restart: unless-stopped
     environment:
       - NODE_ENV=production
