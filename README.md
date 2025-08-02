@@ -35,6 +35,27 @@ npm publish
 cd -
 ```
 
+To publish the docker images, use the same Github token:
+
+```bash
+# from the 02-wizard-application dir, build images with docker compose
+cd 02-wizard-application
+docker compose build
+
+# log into ghcr.io using the same Github token when prompted for a password
+docker login ghcr.io -u cuperman
+
+# tag the images
+docker tag mint-backend:latest ghcr.io/cuperman/mint-assessment/mint-backend:v0.1.0
+docker tag mint-frontend:latest ghcr.io/cuperman/mint-assessment/mint-frontend:v0.1.0
+
+# publish the images
+docker push ghcr.io/cuperman/mint-assessment/mint-backend:v0.1.0
+docker push ghcr.io/cuperman/mint-assessment/mint-frontend:v0.1.0
+
+cd -
+```
+
 ## Original Scope
 
 Welcome to the Mint Home take home challenge! This repo contains two coding challenges that will help us evaluate your technical skills and problem-solving approach.
