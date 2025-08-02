@@ -1,15 +1,18 @@
 {
     "compilerOptions": {
-      "jsx": "react-jsx",
-      "target": "es2019",
-      "module": "commonjs",
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true
+        "jsx": "react-jsx",
+        "target": "es2019",
+        "module": "commonjs",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "./dist",
+        "rootDir": "./01-concurrent-fibonacci/src",
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true
     },
-    "include": [
-      "01-concurrent-fibonacci/src/**/*",
-      "01-concurrent-fibonacci/tests/**/*"
-    ]
-  }
+    "include": ["01-concurrent-fibonacci/src/**/*"],
+    "exclude": ["01-concurrent-fibonacci/tests/**/*", "node_modules", "dist"]
+}

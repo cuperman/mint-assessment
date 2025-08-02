@@ -1,8 +1,27 @@
 {
-    "name": "mint-interview",
-    "version": "1.0.0",
+    "name": "@cuperman/mint-fibonacci",
+    "version": "0.1.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**/*",
+        "package.json",
+        "README.md"
+    ],
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/cuperman/mint-assessment.git",
+        "directory": "01-concurrent-fibonacci"
+    },
     "scripts": {
-        "test": "jest"
+        "build": "tsc",
+        "clean": "rm -rf dist",
+        "prebuild": "npm run clean",
+        "test": "jest",
+        "prepublishOnly": "npm run build"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^5.16.5",

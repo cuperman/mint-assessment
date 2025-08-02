@@ -1,7 +1,21 @@
 {
-  "name": "frontend",
+  "name": "@cuperman/mint-frontend",
   "version": "0.1.0",
-  "private": true,
+  "files": [
+    ".next/**/*",
+    "public/**/*",
+    "package.json",
+    "next.config.ts",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cuperman/mint-assessment.git",
+    "directory": "01-wizard-application/frontend"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -10,7 +24,8 @@
     "format": "prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",

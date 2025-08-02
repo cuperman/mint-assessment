@@ -13,6 +13,28 @@ Each project includes:
 * Github Actions workflows (see [.github/workflows](./.github/workflows))
 * Docker examples included in the Wizard Application
 
+## Publishing Artifacts
+
+To publish the artifacts, you'll need Github credentials.
+
+1. Create a Github token with read/write/delete packages scopes
+2. Add `//npm.pkg.github.com/:_authToken=YOUR_TOKEN` to your local ~/.npmrc
+
+```bash
+# publish fibonacci from the root
+npm publish
+
+# publish backend
+cd 02-wizard-application/backend
+npm publish
+cd -
+
+# publish frontend
+cd 02-wizard-application/frontend
+npm publish
+cd -
+```
+
 ## Original Scope
 
 Welcome to the Mint Home take home challenge! This repo contains two coding challenges that will help us evaluate your technical skills and problem-solving approach.
