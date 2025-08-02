@@ -14,9 +14,8 @@
 */.next/
 
 # Production
-/build
-*/build
-*/dist
+build/
+dist/
 
 # Misc
 .DS_Store
