@@ -122,8 +122,8 @@ Other things I'd like to do given more time
 
 - [ ] Persist state in local storage so that sessions can be resumed when refreshing browser or returning later
 - [ ] Use mono repo pattern to better manage multiple projects within a single repo (ex: Lerna)
-- [ ] Publish npm packages and docker image to Github Packages
-- [ ] Define AWS infrastructure with Infrastructure as Code (ex: CDK or Terraform)
+- [x] Publish npm packages and docker image to Github Packages
+- [x] Define AWS infrastructure with Infrastructure as Code (ex: CDK or Terraform)
 - [ ] Continuous Delivery: auto deploy changes to AWS
 
 ## Original Scope

@@ -13,6 +13,16 @@ Each project includes:
 * Github Actions workflows (see [.github/workflows](./.github/workflows))
 * Docker examples included in the Wizard Application
 
+## Hosted Instances
+
+A running instance is accessible at: [mint.jeffws.com](https://mint.jeffws.com)
+
+## Published Artifacts
+
+Compiled npm packages and docker images are hosted on Github Packages:
+
+See: [github.com/cuperman?tab=packages&repo_name=mint-assessment](https://github.com/cuperman?tab=packages&repo_name=mint-assessment)
+
 ## Publishing Artifacts
 
 To publish the artifacts, you'll need Github credentials.
