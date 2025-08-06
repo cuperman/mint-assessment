@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MongoDB Database
   mongodb:
@@ -28,8 +26,10 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=docker
-      - MONGODB_URI=mongodb://mongodb:27017/wizard_app
       - PORT=3001
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=wizard_app
     ports:
       - '3001:3001'
     depends_on:
