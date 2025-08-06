@@ -1,8 +1,6 @@
-# Welcome to your CDK TypeScript project
+# HVAC Wizard Infrastructure
 
-This is a blank project for CDK development with TypeScript.
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Uses [cdk-cluster](https://github.com/cuperman/cdk-cluster) to run Docker containers in an AWS ECS Cluster
 
 ## Useful commands
 
