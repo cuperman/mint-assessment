@@ -13,6 +13,8 @@ Each project includes:
 * Github Actions workflows (see [.github/workflows](./.github/workflows))
 * Docker examples included in the Wizard Application
 
+*Note: this assessment was completed and submitted within the first week, however, I did follow up with some infrastructure and deployment scope for additional talking points.  See [02-wizard-application/infrastructure](./02-wizard-application/infrastructure) and Hosted Instances / Published Artifacts documented below.*
+
 ## Hosted Instances
 
 A running instance is accessible at: [mint.jeffws.com](https://mint.jeffws.com)
